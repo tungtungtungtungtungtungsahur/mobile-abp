@@ -22,17 +22,17 @@ class CustomBottomNavigationBar extends StatelessWidget {
         const BottomNavigationBarItem(
           icon: Icon(Icons.chat_bubble_outline),
           activeIcon: Icon(Icons.chat_bubble),
-          label: 'Chat',
+          label: 'Inbox',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.attach_money_outlined),
+          activeIcon: _buildIconWithBadge(Icons.attach_money, 3),
+          label: 'Sell',
         ),
         BottomNavigationBarItem(
           icon: _buildIconWithBadge(Icons.shopping_cart_outlined, 2),
           activeIcon: _buildIconWithBadge(Icons.shopping_cart, 2),
           label: 'Cart',
-        ),
-        BottomNavigationBarItem(
-          icon: _buildIconWithBadge(Icons.favorite_border, 3),
-          activeIcon: _buildIconWithBadge(Icons.favorite, 3),
-          label: 'Wishlist',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),

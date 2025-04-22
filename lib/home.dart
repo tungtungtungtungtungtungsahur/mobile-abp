@@ -103,7 +103,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- Body ---
   Widget _buildBody() {
-    // Use SingleChildScrollView to prevent overflow if content is long
+    // Return different content based on selected index
+    switch (_selectedIndex) {
+      case 0: // Home tab
+        return _buildHomeContent();
+      case 1: // Inbox tab
+        return _buildInboxContent();
+      case 2: // Sell tab
+        return _buildSellContent();
+      case 3: // Cart tab
+        return _buildCartContent();
+      case 4: // Profile tab
+        return _buildProfileContent();
+      default:
+        return _buildHomeContent();
+    }
+  }
+
+  // Home tab content
+  Widget _buildHomeContent() {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -120,10 +138,38 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildSectionTitle('Rekomendasi Untuk anda'),
             const SizedBox(height: 12),
             _buildRecommendationsGrid(),
-            const SizedBox(height: 20), // Add some padding at the bottom
+            const SizedBox(height: 20),
           ],
         ),
       ),
+    );
+  }
+
+  // Inbox tab content
+  Widget _buildInboxContent() {
+    return const Center(
+      child: Text('Inbox Content'),
+    );
+  }
+
+  // Sell tab content
+  Widget _buildSellContent() {
+    return const Center(
+      child: Text('Sell Content'),
+    );
+  }
+
+  // Cart tab content
+  Widget _buildCartContent() {
+    return const Center(
+      child: Text('Cart Content'),
+    );
+  }
+
+  // Profile tab content
+  Widget _buildProfileContent() {
+    return const Center(
+      child: Text('Profile Content'),
     );
   }
 
