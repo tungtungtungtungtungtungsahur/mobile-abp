@@ -1,29 +1,34 @@
 // lib/home_screen.dart
 import 'package:flutter/material.dart';
 import 'components/bottom_navigation_bar.dart';
+import 'profile.dart';
 
 // Placeholder data - replace with your actual data models and fetching logic
 final List<Map<String, dynamic>> recommendedProducts = [
   {
-    'image': 'https://images.stockx.com/360/Air-Jordan-4-Retro-SB-Navy/Images/Air-Jordan-4-Retro-SB-Navy/Lv2/img01.jpg?w=576&q=57&dpr=2&updated_at=1740417865&h=384',
+    'image':
+        'https://images.stockx.com/360/Air-Jordan-4-Retro-SB-Navy/Images/Air-Jordan-4-Retro-SB-Navy/Lv2/img01.jpg?w=576&q=57&dpr=2&updated_at=1740417865&h=384',
     'name': 'Nike Air VaporMax Evo',
     'price': 'Rp. 120.000',
     'condition': 'New',
   },
   {
-    'image': 'https://images.stockx.com/images/Supreme-MLB-Teams-Box-Logo-New-Era-Red.jpg?fit=fill&bg=FFFFFF&w=78&h=56&q=57&dpr=2&trim=color&updated_at=1744142786',
+    'image':
+        'https://images.stockx.com/images/Supreme-MLB-Teams-Box-Logo-New-Era-Red.jpg?fit=fill&bg=FFFFFF&w=78&h=56&q=57&dpr=2&trim=color&updated_at=1744142786',
     'name': 'Supreme MLB Cap',
     'price': 'Rp. 200.000',
     'condition': 'New',
   },
   {
-    'image': 'https://id-live-01.slatic.net/p/ec4945dedfeac49e4f83ae12dabc0e44.jpg',
+    'image':
+        'https://id-live-01.slatic.net/p/ec4945dedfeac49e4f83ae12dabc0e44.jpg',
     'name': 'Lightstick NCT',
     'price': 'Rp. 300.000',
     'condition': 'Second',
   },
   {
-    'image': 'https://www.elektronikmurah.biz/cdn/shop/products/MCM-606-A-1x1.jpg?v=1569564711',
+    'image':
+        'https://www.elektronikmurah.biz/cdn/shop/products/MCM-606-A-1x1.jpg?v=1569564711',
     'name': 'Rice cooker miyako',
     'price': 'Rp. 90.000',
     'condition': 'Second',
@@ -70,13 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Halo👋',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
+          Text('Halo👋', style: TextStyle(fontSize: 14, color: Colors.grey)),
           Text(
             'Sultan Mahesa',
             style: TextStyle(
@@ -94,7 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
             radius: 20,
             // Replace with your actual image provider
             backgroundImage: NetworkImage(
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Su_C6HSatMIb9Z4j0K5xce2QiCvmKSf4Qg&s'),
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Su_C6HSatMIb9Z4j0K5xce2QiCvmKSf4Qg&s',
+            ),
           ),
         ),
       ],
@@ -147,30 +147,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Inbox tab content
   Widget _buildInboxContent() {
-    return const Center(
-      child: Text('Inbox Content'),
-    );
+    return const Center(child: Text('Inbox Content'));
   }
 
   // Sell tab content
   Widget _buildSellContent() {
-    return const Center(
-      child: Text('Sell Content'),
-    );
+    return const Center(child: Text('Sell Content'));
   }
 
   // Cart tab content
   Widget _buildCartContent() {
-    return const Center(
-      child: Text('Cart Content'),
-    );
+    return const Center(child: Text('Cart Content'));
   }
 
   // Profile tab content
   Widget _buildProfileContent() {
-    return const Center(
-      child: Text('Profile Content'),
-    );
+    return const ProfilePage();
   }
 
   // --- Search Bar ---
@@ -214,7 +206,10 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildCategoryItem(Icons.shopping_bag_outlined, 'Shirt'),
           const SizedBox(width: 12),
-          _buildCategoryItem(Icons.accessibility_new, 'Pants'), // Find better icon
+          _buildCategoryItem(
+            Icons.accessibility_new,
+            'Pants',
+          ), // Find better icon
           const SizedBox(width: 12),
           _buildCategoryItem(Icons.directions_run, 'Shoes'), // Find better icon
           const SizedBox(width: 12),
@@ -311,8 +306,9 @@ class _HomeScreenState extends State<HomeScreen> {
             // Image
             Expanded(
               child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(8.0)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(8.0),
+                ),
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover, // Adjust fit as needed
@@ -324,7 +320,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   errorBuilder: (context, error, stackTrace) {
                     return const Center(
-                        child: Icon(Icons.broken_image, color: Colors.grey));
+                      child: Icon(Icons.broken_image, color: Colors.grey),
+                    );
                   },
                 ),
               ),
@@ -380,4 +377,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
