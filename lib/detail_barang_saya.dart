@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'editDetailBarangToko.dart';
+import 'hapusbarangdariToko.dart';
 
 class DetailBarangSaya extends StatelessWidget {
   final Map<String, String> product;
@@ -237,7 +238,45 @@ class DetailBarangSaya extends StatelessWidget {
             SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Hapus produk'),
+                        content: Text('Apakah kamu yakin ingin menghapus produk ini?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text('BATAL'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.grey[700],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(context).pop(); // Close the dialog
+                              
+                              // Call delete service
+                              bool success = await HapusBarangService.hapusBarang(context, product);
+                              
+                              if (success) {
+                                // Navigate back to previous screen after successful deletion
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: Text('HAPUS'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
                 child: Text('Hapus Produk'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
