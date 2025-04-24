@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_kel_5/home.dart';
 import 'package:project_kel_5/profile.dart';
+import 'package:project_kel_5/signin.dart';
+import 'package:project_kel_5/signup.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,9 +21,11 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins', // Example: Use a custom font if desired
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+      initialRoute: '/signin',
       routes: {
-        '/': (context) => const HomeScreen(),
+        '/signin': (context) => const SignInPage(),
+        '/signup': (context) => const SignUpPage(),
+        '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfilePage(),
       },
     );
