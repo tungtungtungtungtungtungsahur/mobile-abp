@@ -45,7 +45,7 @@ class _ProfileBarangState extends State<ProfileBarang>
                     CircleAvatar(
                       radius: 40,
                       backgroundImage: NetworkImage(
-                        'https://via.placeholder.com/80',
+                        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -205,22 +205,22 @@ class _ProfileBarangState extends State<ProfileBarang>
       {
         'name': 'Navy blue vest',
         'price': 'Rp 50.000',
-        'image': 'https://via.placeholder.com/150',
+        'image': 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=800&auto=format&fit=crop&q=60',
       },
       {
         'name': 'Kemeja kotak-kotak',
         'price': 'Rp 50.000',
-        'image': 'https://via.placeholder.com/150',
+        'image': 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=800&auto=format&fit=crop&q=60',
       },
       {
         'name': 'Hair tonic',
         'price': 'Rp 50.000',
-        'image': 'https://via.placeholder.com/150',
+        'image': 'https://images.unsplash.com/photo-1625772452859-1c03d5bf1137?w=800&auto=format&fit=crop&q=60',
       },
       {
         'name': 'Sepatu Sneakers',
         'price': 'Rp 50.000',
-        'image': 'https://via.placeholder.com/150',
+        'image': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=60',
       },
     ];
 
