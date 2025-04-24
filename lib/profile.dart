@@ -1,207 +1,147 @@
 import 'package:flutter/material.dart';
+import 'profile_barang.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
-
-  @override
-  _ProfilePageState createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // Profile Header
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: NetworkImage(
-                      'https://via.placeholder.com/80', // Replace with actual image URL
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const Expanded(
+                      child: Text(
+                        'Akun Saya',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 40), // To balance the back button
+                  ],
+                ),
+              ),
+
+              // Profile Section
+              Center(
+                child: Column(
+                  children: [
+                    Stack(
                       children: [
-                        Row(
-                          children: [
-                            const Text(
-                              'Sultan Mahesa',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(Icons.verified, color: Colors.blue, size: 20),
-                          ],
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: NetworkImage(
+                            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
+                          ),
                         ),
-                        Text(
-                          '@sultanmng',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 16,
-                              color: Colors.grey[600],
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Bandung',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ],
+                            child: const Icon(Icons.edit, size: 20),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.share),
-                        onPressed: () {},
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Sultan Mahesa',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Rating Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  Text(
-                    '5.0 ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: List.generate(
-                      5,
-                      (index) =>
-                          Icon(Icons.star, size: 16, color: Colors.amber),
                     ),
-                  ),
-                  Text(' (100)', style: TextStyle(color: Colors.grey[600])),
-                  const Spacer(),
-                  Text(
-                    'Tergabung 1 tahun',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            // Tab Bar
-            TabBar(
-              controller: _tabController,
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.grey,
-              tabs: const [
-                Tab(text: 'Barang'),
-                Tab(text: 'Ulasan'),
-                Tab(text: 'Tentang'),
-              ],
-            ),
-            // Tab Bar View
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Barang Tab
-                  GridView.builder(
-                    padding: const EdgeInsets.all(8),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(4),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    Icons.image,
-                                    color: Colors.grey[400],
-                                    size: 32,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Item Name',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Rp 50.000',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  // Ulasan Tab
-                  const Center(child: Text('Ulasan Content')),
-                  // Tentang Tab
-                  const Center(child: Text('Tentang Content')),
-                ],
+
+              // Statistics Section
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildStatItem('Pengolahan', '0'),
+                    Container(width: 1, height: 40, color: Colors.grey[300]),
+                    _buildStatItem('Dikirim', '0'),
+                    Container(width: 1, height: 40, color: Colors.grey[300]),
+                    _buildStatItem('Siap untuk Pickup', '1'),
+                  ],
+                ),
               ),
-            ),
+
+              // Menu Items
+              _buildMenuItem(
+                'Katalog Saya',
+                Icons.store,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileBarang(),
+                    ),
+                  );
+                },
+              ),
+              _buildMenuItem('Alamat Pengiriman', Icons.location_on),
+              _buildMenuItem('FAQ', Icons.help),
+              _buildMenuItem('Pelayanan Pelanggan', Icons.headset_mic),
+              _buildMenuItem('Pengaturan', Icons.settings),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem(String title, IconData icon, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(title, style: const TextStyle(fontSize: 16)),
+            const Spacer(),
+            Icon(Icons.chevron_right, color: Colors.grey[400]),
           ],
         ),
       ),

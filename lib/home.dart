@@ -62,47 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
       body: _buildBody(),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ),
-    );
-  }
-
-  // --- AppBar ---
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white, // Or your desired background color
-      elevation: 0, // Remove shadow
-      titleSpacing: 16.0, // Adjust spacing if needed
-      title: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Halo👋', style: TextStyle(fontSize: 14, color: Colors.grey)),
-          Text(
-            'Sultan Mahesa',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
-      actions: const [
-        Padding(
-          padding: EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            radius: 20,
-            // Replace with your actual image provider
-            backgroundImage: NetworkImage(
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Su_C6HSatMIb9Z4j0K5xce2QiCvmKSf4Qg&s',
-            ),
-          ),
-        ),
-      ],
     );
   }
 
