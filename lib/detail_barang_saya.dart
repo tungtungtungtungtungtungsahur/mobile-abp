@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'editDetailBarangToko.dart';
 
 class DetailBarangSaya extends StatelessWidget {
   final Map<String, String> product;
@@ -214,7 +215,14 @@ class DetailBarangSaya extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditDetailBarangToko(product: product),
+                    ),
+                  );
+                },
                 child: Text('Edit produk'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.black,
