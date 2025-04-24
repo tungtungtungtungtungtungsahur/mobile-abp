@@ -10,14 +10,19 @@ class _SellPageState extends State<SellPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   String? _selectedCategory;
-  String? _selectedBrand;
   String? _selectedCondition;
   int _charCount = 0;
   final int _maxChars = 500;
   int _hashtagCount = 6;
 
   // Dummy data untuk dropdown
-  final List<String> categories = ['Pakaian', 'Elektronik', 'Aksesoris', 'perabotan', 'tas'];
+  final List<String> categories = [
+    'Pakaian',
+    'Elektronik',
+    'Aksesoris',
+    'perabotan',
+    'tas',
+  ];
   final List<String> conditions = ['Baru', 'Bekas'];
 
   void _showSuccessDialog(BuildContext context) {
@@ -32,7 +37,10 @@ class _SellPageState extends State<SellPage> {
               child: Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
-                Navigator.pushReplacementNamed(context, '/katalog'); // Navigasi ke katalog
+                Navigator.pushReplacementNamed(
+                  context,
+                  '/katalog',
+                ); // Navigasi ke katalog
               },
             ),
           ],
@@ -64,7 +72,9 @@ class _SellPageState extends State<SellPage> {
         'category': _selectedCategory,
         'condition': _selectedCondition,
       };
-      
+
+      // Use productData here
+      print('Uploading product: $productData');
       _showSuccessDialog(context);
     }
   }
@@ -111,17 +121,23 @@ class _SellPageState extends State<SellPage> {
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: index == 0
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add, color: Colors.black54),
-                              SizedBox(height: 4),
-                              Text('Tambah foto',
-                                  style: TextStyle(color: Colors.black54, fontSize: 12)),
-                            ],
-                          )
-                        : Container(),
+                    child:
+                        index == 0
+                            ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add, color: Colors.black54),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Tambah foto',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            )
+                            : Container(),
                   );
                 },
               ),
@@ -131,12 +147,16 @@ class _SellPageState extends State<SellPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Pilih hingga 8 foto',
-                      style: TextStyle(color: Colors.black54, fontSize: 12)),
+                  Text(
+                    'Pilih hingga 8 foto',
+                    style: TextStyle(color: Colors.black54, fontSize: 12),
+                  ),
                   TextButton(
                     onPressed: () {},
-                    child: Text('Baca tips foto',
-                        style: TextStyle(color: Colors.blue[700], fontSize: 12)),
+                    child: Text(
+                      'Baca tips foto',
+                      style: TextStyle(color: Colors.blue[700], fontSize: 12),
+                    ),
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: Size(0, 0),
@@ -155,17 +175,18 @@ class _SellPageState extends State<SellPage> {
                 children: [
                   Text(
                     'Deskripsi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   TextField(
                     controller: _descriptionController,
                     maxLines: null,
                     decoration: InputDecoration(
-                      hintText: 'Deskripsi barangmu.\n\nMulai dengan judul, lalu tambahin detail termasuk bahan, kondisi, ukuran, dan gaya.',
-                      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      hintText:
+                          'Deskripsi barangmu.\n\nMulai dengan judul, lalu tambahin detail termasuk bahan, kondisi, ukuran, dan gaya.',
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 14,
+                      ),
                       border: InputBorder.none,
                     ),
                     onChanged: (text) {
@@ -194,7 +215,6 @@ class _SellPageState extends State<SellPage> {
 
             // List Items
             _buildListItem('Category'),
-            _buildListItem('Brand'),
             _buildListItem('Styles'),
             _buildListItem('Condition'),
             _buildListItem('Price'),
@@ -216,7 +236,10 @@ class _SellPageState extends State<SellPage> {
                     SnackBar(content: Text('Disimpan sebagai draft')),
                   );
                 },
-                child: Text('Save as draft', style: TextStyle(color: Colors.black)),
+                child: Text(
+                  'Save as draft',
+                  style: TextStyle(color: Colors.black),
+                ),
                 style: OutlinedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   side: BorderSide(color: Colors.grey[300]!),
@@ -251,8 +274,10 @@ class _SellPageState extends State<SellPage> {
     return Column(
       children: [
         ListTile(
-          title: Text(title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
+          title: Text(
+            title,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+          ),
           trailing: Icon(Icons.chevron_right, color: Colors.grey),
           contentPadding: EdgeInsets.symmetric(horizontal: 16),
           visualDensity: VisualDensity.compact,
