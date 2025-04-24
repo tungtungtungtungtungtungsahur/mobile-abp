@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'detail_barang_saya.dart';
 
 class ProfileBarang extends StatefulWidget {
   const ProfileBarang({super.key});
@@ -245,44 +246,54 @@ class _ProfileBarangState extends State<ProfileBarang>
             ),
             itemCount: products.length,
             itemBuilder: (context, index) {
-              return Card(
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        color: Colors.grey[200],
-                        child: Image.network(
-                          products[index]['image']!,
-                          fit: BoxFit.cover,
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailBarangSaya(product: products[index]),
+                    ),
+                  );
+                },
+                child: Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          color: Colors.grey[200],
+                          child: Image.network(
+                            products[index]['image']!,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            products[index]['name']!,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              products[index]['name']!,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            products[index]['price']!,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              products[index]['price']!,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },
