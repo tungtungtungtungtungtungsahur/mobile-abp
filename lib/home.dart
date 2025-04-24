@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'components/bottom_navigation_bar.dart';
 import 'profile.dart';
+import 'sell.dart';
 
 // Placeholder data - replace with your actual data models and fetching logic
 final List<Map<String, dynamic>> recommendedProducts = [
@@ -49,8 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      // Handle navigation logic here based on index
-      print('Tapped index: $index');
+      if (index == 2) { // Index 2 is for Sell tab
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SellPage()),
+        );
+      }
     });
   }
 
@@ -152,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Sell tab content
   Widget _buildSellContent() {
-    return const Center(child: Text('Sell Content'));
+    return SellPage();
   }
 
   // Cart tab content
