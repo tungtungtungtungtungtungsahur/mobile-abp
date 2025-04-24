@@ -17,27 +17,27 @@ class CustomBottomNavigationBar extends StatelessWidget {
         const BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           activeIcon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.chat_bubble_outline),
-          activeIcon: Icon(Icons.chat_bubble),
-          label: 'Inbox',
+          label: 'Beranda',
         ),
         BottomNavigationBarItem(
+          icon: _buildIconWithBadge(Icons.chat_bubble_outline, 3),
+          activeIcon: _buildIconWithBadge(Icons.chat_bubble_outline, 3),
+          label: 'Pesan',
+        ),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.attach_money_outlined),
-          activeIcon: _buildIconWithBadge(Icons.attach_money, 3),
-          label: 'Sell',
+          activeIcon: Icon(Icons.attach_money),
+          label: 'Jual',
         ),
         BottomNavigationBarItem(
           icon: _buildIconWithBadge(Icons.shopping_cart_outlined, 2),
           activeIcon: _buildIconWithBadge(Icons.shopping_cart, 2),
-          label: 'Cart',
+          label: 'Keranjang',
         ),
         const BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
           activeIcon: Icon(Icons.person),
-          label: 'Profile',
+          label: 'Akun',
         ),
       ],
       currentIndex: selectedIndex,
@@ -68,21 +68,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
               color: Colors.red,
               borderRadius: BorderRadius.circular(8),
             ),
-            constraints: const BoxConstraints(
-              minWidth: 16,
-              minHeight: 16,
-            ),
+            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
             child: Text(
               '$count',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 10),
               textAlign: TextAlign.center,
             ),
           ),
-        )
+        ),
       ],
     );
   }
-} 
+}

@@ -12,28 +12,12 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             children: [
               // Header
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Akun Saya',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 40), // To balance the back button
-                  ],
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Akun Saya',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
 

@@ -88,7 +88,7 @@ class _SellPageState extends State<SellPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.close, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/'),
         ),
         title: Text('Jual produk', style: TextStyle(color: Colors.black)),
         actions: [
