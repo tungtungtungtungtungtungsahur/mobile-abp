@@ -1,0 +1,147 @@
+import 'package:flutter/material.dart';
+
+class ChatListPage extends StatelessWidget {
+  const ChatListPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Hi Tuman"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(20),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              '6 Pesan belum dibaca',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ),
+        ),
+      ),
+      body: ListView(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Chats',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ...chatItems.map((chat) => _buildChatTile(chat, context)).toList(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatTile(ChatItem chat, BuildContext context) {
+    return ListTile(
+      leading: GestureDetector(
+        onTap: () {
+          _showAvatarDialog(context, chat.avatarUrl);
+        },
+        child: CircleAvatar(
+          backgroundColor: Colors.grey[300],
+          backgroundImage: NetworkImage(chat.avatarUrl),
+        ),
+      ),
+      title: Text(chat.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text(chat.message, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(chat.time, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          if (chat.unreadCount > 0)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                chat.unreadCount.toString(),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ),
+        ],
+      ),
+      onTap: () {
+        // TODO: Navigate to chat detail screen
+      },
+    );
+  }
+
+  void _showAvatarDialog(BuildContext context, String avatarUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.zero,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                ),
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                  child: Image.network(
+                    avatarUrl,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Dummy Data
+class ChatItem {
+  final String name;
+  final String message;
+  final String time;
+  final int unreadCount;
+  final String avatarUrl;
+
+  ChatItem(this.name, this.message, this.time, this.unreadCount, this.avatarUrl);
+}
+
+List<ChatItem> chatItems = [
+  ChatItem('Karina', 'Minusnya dimana ya kak?', '19:45', 2, 'https://randomuser.me/api/portraits/women/1.jpg'),
+  ChatItem('Sigma Boy', '✓ Bisa nego tipis ya kak', '18:41', 0, 'https://randomuser.me/api/portraits/men/1.jpg'),
+  ChatItem('Archen', 'Permisi, bisa lihat kondisi realnya kak?', '17:45', 2, '/images/archen.jpg'),
+  ChatItem('Kak Gem', 'kak, jual kata-kata?', '17:20', 0, 'https://randomuser.me/api/portraits/men/3.jpg'),
+  ChatItem('Brandon salam', '✓ baik kak, sampai bertemu di lokasi ya', '16:31', 0, 'https://randomuser.me/api/portraits/men/4.jpg'),
+  ChatItem('Anita', 'Minusnya apa ya kak?', '12:42', 2, 'https://randomuser.me/api/portraits/women/2.jpg'),
+  ChatItem('Juju', 'Kak, bisa dikirim ke lokasi aku ga ya?', '12:03', 0, 'https://randomuser.me/api/portraits/women/3.jpg'),
+];

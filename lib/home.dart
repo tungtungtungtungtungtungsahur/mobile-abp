@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'components/bottom_navigation_bar.dart';
 import 'profile.dart';
 import 'sell.dart';
+import 'chat_list_page.dart';
 import 'cart.dart';
 
 // Placeholder data - replace with your actual data models and fetching logic
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Inbox tab content
   Widget _buildInboxContent() {
-    return const Center(child: Text('Inbox Content'));
+    return const ChatListPage();
   }
 
   // Sell tab content
