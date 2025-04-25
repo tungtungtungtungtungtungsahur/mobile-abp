@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pesananSelesai.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -73,7 +74,7 @@ class _CartPageState extends State<CartPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const CartStatusPage(status: 'Selesai'),
+                        builder: (context) => const PesananSelesai(),
                       ),
                     );
                   },
