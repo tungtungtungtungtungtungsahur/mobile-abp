@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'components/bottom_navigation_bar.dart';
 import 'profile.dart';
 import 'sell.dart';
+import 'cart.dart';
 
 // Placeholder data - replace with your actual data models and fetching logic
 final List<Map<String, dynamic>> recommendedProducts = [
@@ -126,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Cart tab content
   Widget _buildCartContent() {
-    return const Center(child: Text('Cart Content'));
+    return const CartPage();
   }
 
   // Profile tab content
