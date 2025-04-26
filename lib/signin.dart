@@ -75,14 +75,6 @@ class _SignInPageState extends State<SignInPage> {
                   height: 100,
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'barbek',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
                 const SizedBox(height: 30),
 
                 // Email field
@@ -168,7 +160,7 @@ class _SignInPageState extends State<SignInPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Sign In'),
+                      : const Text('Daftar'),
                 ),
                 const SizedBox(height: 20),
 
@@ -178,7 +170,7 @@ class _SignInPageState extends State<SignInPage> {
                     Navigator.pushReplacementNamed(context, '/signup');
                   },
                   child: const Text(
-                    'Don\'t have an account? Register',
+                    'Belum punya akun? Daftar disini',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),

@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/signin',
+      initialRoute: '/landingMenu',
       routes: {
         '/landingMenu': (context) => const LandingMenu(),
         '/signin': (context) => const SignInPage(),
