@@ -46,7 +46,7 @@ class _ProfileBarangState extends State<ProfileBarang>
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 40,
                       backgroundImage: NetworkImage(
                         'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
@@ -222,7 +222,8 @@ class _ProfileBarangState extends State<ProfileBarang>
 
               return Text(
                 '${products.length} Barang',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               );
             },
           ),
