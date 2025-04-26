@@ -11,19 +11,150 @@ class _SellPageState extends State<SellPage> {
   final TextEditingController _priceController = TextEditingController();
   String? _selectedCategory;
   String? _selectedCondition;
+  String? _selectedStyle;
   int _charCount = 0;
   final int _maxChars = 500;
   int _hashtagCount = 6;
 
   // Dummy data untuk dropdown
   final List<String> categories = [
-    'Pakaian',
+    'Fashion',
+    'Furniture',
     'Elektronik',
     'Aksesoris',
-    'perabotan',
-    'tas',
+    'Sepatu',
+    'Tas',
+    'Kosmetik',
+    'Perlengkapan Rumah',
   ];
-  final List<String> conditions = ['Baru', 'Bekas'];
+
+  final List<String> conditions = ['Baru', 'Bekas', 'Baru dengan tag', 'Bekas seperti baru'];
+  final List<String> styles = ['Batik', 'Casual', 'Formal', 'Sporty', 'Vintage', 'Modern', 'Minimalis', 'Other'];
+
+  void _showCategoryDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pilih Kategori'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(categories[index]),
+                  onTap: () {
+                    setState(() {
+                      _selectedCategory = categories[index];
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showConditionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pilih Kondisi'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: conditions.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(conditions[index]),
+                  onTap: () {
+                    setState(() {
+                      _selectedCondition = conditions[index];
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showStyleDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pilih Style'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: styles.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(styles[index]),
+                  onTap: () {
+                    setState(() {
+                      _selectedStyle = styles[index];
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPriceDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Masukkan Harga'),
+          content: TextField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              prefixText: 'Rp ',
+              hintText: 'Masukkan harga',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_priceController.text.isNotEmpty && 
+                    int.parse(_priceController.text) > 0) {
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Harga harus lebih dari 0')),
+                  );
+                }
+              },
+              child: Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _showSuccessDialog(BuildContext context) {
     showDialog(
@@ -54,7 +185,8 @@ class _SellPageState extends State<SellPage> {
         _priceController.text.isEmpty ||
         _descriptionController.text.isEmpty ||
         _selectedCategory == null ||
-        _selectedCondition == null) {
+        _selectedCondition == null ||
+        _selectedStyle == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Mohon lengkapi semua data produk')),
       );
@@ -71,6 +203,7 @@ class _SellPageState extends State<SellPage> {
         'description': _descriptionController.text,
         'category': _selectedCategory,
         'condition': _selectedCondition,
+        'style': _selectedStyle,
       };
 
       // Use productData here
@@ -214,10 +347,22 @@ class _SellPageState extends State<SellPage> {
             Divider(height: 1),
 
             // List Items
-            _buildListItem('Category'),
-            _buildListItem('Styles'),
-            _buildListItem('Condition'),
-            _buildListItem('Price'),
+            GestureDetector(
+              onTap: _showCategoryDialog,
+              child: _buildListItem('Category', _selectedCategory ?? 'Pilih kategori'),
+            ),
+            GestureDetector(
+              onTap: _showStyleDialog,
+              child: _buildListItem('Styles', _selectedStyle ?? 'Pilih style'),
+            ),
+            GestureDetector(
+              onTap: _showConditionDialog,
+              child: _buildListItem('Condition', _selectedCondition ?? 'Pilih kondisi'),
+            ),
+            GestureDetector(
+              onTap: _showPriceDialog,
+              child: _buildListItem('Price', _priceController.text.isEmpty ? 'Masukkan harga' : 'Rp ${_priceController.text}'),
+            ),
           ],
         ),
       ),
@@ -270,7 +415,7 @@ class _SellPageState extends State<SellPage> {
     );
   }
 
-  Widget _buildListItem(String title) {
+  Widget _buildListItem(String title, String value) {
     return Column(
       children: [
         ListTile(
@@ -278,7 +423,16 @@ class _SellPageState extends State<SellPage> {
             title,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
           ),
-          trailing: Icon(Icons.chevron_right, color: Colors.grey),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey),
+            ],
+          ),
           contentPadding: EdgeInsets.symmetric(horizontal: 16),
           visualDensity: VisualDensity.compact,
         ),

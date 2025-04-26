@@ -11,9 +11,173 @@ class EditDetailBarangToko extends StatefulWidget {
 
 class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
   int _charCount = 26;
   final int _maxChars = 500;
   int _hashtagCount = 6;
+  
+  String _selectedCategory = 'Chelsea boots';
+  String _selectedStyle = 'Batik';
+  String _selectedCondition = 'Baru dengan tag';
+  String _selectedPrice = 'Rp 80.000';
+
+  final List<String> _categories = [
+    'Fashion',
+    'Furniture',
+    'Elektronik',
+    'Aksesoris',
+    'Sepatu',
+    'Tas',
+    'Kosmetik',
+    'Perlengkapan Rumah',
+  ];
+
+  final List<String> _conditions = [
+    'Baru',
+    'Bekas',
+    'Baru dengan tag',
+    'Bekas seperti baru',
+  ];
+
+  final List<String> _styles = [
+    'Batik',
+    'Casual',
+    'Formal',
+    'Sporty',
+    'Vintage',
+    'Modern',
+    'Minimalis',
+    'Other',
+  ];
+
+  void _showCategoryDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pilih Kategori'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _categories.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_categories[index]),
+                  onTap: () {
+                    setState(() {
+                      _selectedCategory = _categories[index];
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showConditionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pilih Kondisi'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _conditions.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_conditions[index]),
+                  onTap: () {
+                    setState(() {
+                      _selectedCondition = _conditions[index];
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showStyleDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pilih Style'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _styles.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_styles[index]),
+                  onTap: () {
+                    setState(() {
+                      _selectedStyle = _styles[index];
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPriceDialog() {
+    _priceController.text = _selectedPrice.replaceAll('Rp ', '');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Masukkan Harga'),
+          content: TextField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              prefixText: 'Rp ',
+              hintText: 'Masukkan harga',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_priceController.text.isNotEmpty && 
+                    int.parse(_priceController.text) > 0) {
+                  setState(() {
+                    _selectedPrice = 'Rp ${_priceController.text}';
+                  });
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Harga harus lebih dari 0')),
+                  );
+                }
+              },
+              child: Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -141,10 +305,22 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
             Divider(height: 1),
 
             // List Items
-            _buildListItem('Category', 'Chelsea boots'),
-            _buildListItem('Styles', 'Batik'),
-            _buildListItem('Condition', 'Baru dengan tag'),
-            _buildListItem('Price', 'Rp 80.000'),
+            GestureDetector(
+              onTap: _showCategoryDialog,
+              child: _buildListItem('Category', _selectedCategory),
+            ),
+            GestureDetector(
+              onTap: _showStyleDialog,
+              child: _buildListItem('Styles', _selectedStyle),
+            ),
+            GestureDetector(
+              onTap: _showConditionDialog,
+              child: _buildListItem('Condition', _selectedCondition),
+            ),
+            GestureDetector(
+              onTap: _showPriceDialog,
+              child: _buildListItem('Price', _selectedPrice),
+            ),
           ],
         ),
       ),
@@ -217,6 +393,7 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   @override
   void dispose() {
     _descriptionController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 }
