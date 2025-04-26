@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'detail_barang_saya.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'editDetailbarangtoko.dart';
 
 class ProfileBarang extends StatefulWidget {
   const ProfileBarang({super.key});
@@ -124,10 +126,6 @@ class _ProfileBarangState extends State<ProfileBarang>
                           icon: const Icon(Icons.share),
                           onPressed: () {},
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {},
-                        ),
                       ],
                     ),
                   ],
@@ -202,99 +200,169 @@ class _ProfileBarangState extends State<ProfileBarang>
   }
 
   Widget _buildBarangTab() {
-    final List<Map<String, String>> products = [
-      {
-        'name': 'Navy blue vest',
-        'price': 'Rp 50.000',
-        'image': 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=800&auto=format&fit=crop&q=60',
-      },
-      {
-        'name': 'Kemeja kotak-kotak',
-        'price': 'Rp 50.000',
-        'image': 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=800&auto=format&fit=crop&q=60',
-      },
-      {
-        'name': 'Hair tonic',
-        'price': 'Rp 50.000',
-        'image': 'https://images.unsplash.com/photo-1625772452859-1c03d5bf1137?w=800&auto=format&fit=crop&q=60',
-      },
-      {
-        'name': 'Sepatu Sneakers',
-        'price': 'Rp 50.000',
-        'image': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=60',
-      },
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Text(
-            '10 Barang',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          child: StreamBuilder<QuerySnapshot>(
+            stream:
+                FirebaseFirestore.instance.collection('products').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final products = snapshot.data?.docs ?? [];
+
+              return Text(
+                '${products.length} Barang',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              );
+            },
           ),
         ),
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailBarangSaya(product: products[index]),
+          child: StreamBuilder<QuerySnapshot>(
+            stream:
+                FirebaseFirestore.instance.collection('products').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final products = snapshot.data?.docs ?? [];
+
+              return GridView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  final product =
+                      products[index].data() as Map<String, dynamic>;
+                  final images = product['images'] as List<dynamic>?;
+
+                  return InkWell(
+                    onTap: () {
+                      final productDoc = snapshot.data?.docs[index];
+                      if (productDoc != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => DetailBarangSaya(
+                                  productId: productDoc.id,
+                                  product:
+                                      productDoc.data() as Map<String, dynamic>,
+                                ),
+                          ),
+                        );
+                      }
+                    },
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child:
+                                  (product['images'] as List<dynamic>?)
+                                              ?.isNotEmpty ==
+                                          true
+                                      ? Image.network(
+                                        (product['images'] as List<dynamic>)[0],
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          return const Center(
+                                            child: Icon(Icons.error),
+                                          );
+                                        },
+                                      )
+                                      : const Center(
+                                        child: Icon(Icons.image_not_supported),
+                                      ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product['name'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Rp ${product['price'] ?? 0}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () {
+                                        final productDoc =
+                                            snapshot.data?.docs[index];
+                                        if (productDoc != null) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      EditDetailBarangToko(
+                                                        productId:
+                                                            productDoc.id,
+                                                        product:
+                                                            productDoc.data()
+                                                                as Map<
+                                                                  String,
+                                                                  dynamic
+                                                                >,
+                                                      ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
-                child: Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          color: Colors.grey[200],
-                          child: Image.network(
-                            products[index]['image']!,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              products[index]['name']!,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              products[index]['price']!,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               );
             },
           ),

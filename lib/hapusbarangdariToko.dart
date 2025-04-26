@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HapusBarangService {
   // Function to delete product
-  static Future<bool> hapusBarang(BuildContext context, Map<String, String> product) async {
+  static Future<bool> hapusBarang(
+    BuildContext context,
+    String productId,
+  ) async {
     try {
-      // TODO: Implement actual API call to delete the product
-      // For now, we'll simulate a successful deletion
-      await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-      
+      await FirebaseFirestore.instance
+          .collection('products')
+          .doc(productId)
+          .delete();
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -16,7 +21,7 @@ class HapusBarangService {
           duration: Duration(seconds: 2),
         ),
       );
-      
+
       return true;
     } catch (e) {
       // Show error message if deletion fails
@@ -27,7 +32,7 @@ class HapusBarangService {
           duration: Duration(seconds: 2),
         ),
       );
-      
+
       return false;
     }
   }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'editDetailBarangToko.dart';
 import 'hapusbarangdariToko.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DetailBarangSaya extends StatelessWidget {
-  final Map<String, String> product;
+  final Map<String, dynamic> product;
+  final String? productId;
 
-  const DetailBarangSaya({Key? key, required this.product}) : super(key: key);
+  const DetailBarangSaya({Key? key, required this.product, this.productId})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,33 +22,53 @@ class DetailBarangSaya extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: Icon(Icons.shopping_cart_outlined, color: Colors.black),
-                onPressed: () {},
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+          if (productId != null) ...[
+            IconButton(
+              icon: Icon(Icons.edit, color: Colors.black),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => EditDetailBarangToko(
+                          productId: productId!,
+                          product: product,
+                        ),
                   ),
-                  child: Text(
-                    '4',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+                );
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.black),
+              onPressed: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: Text('Hapus Produk'),
+                        content: Text(
+                          'Apakah Anda yakin ingin menghapus produk ini?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text('Batal'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text('Hapus'),
+                          ),
+                        ],
+                      ),
+                );
+
+                if (confirmed == true && productId != null) {
+                  await HapusBarangService.hapusBarang(context, productId!);
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
           IconButton(
             icon: Icon(Icons.share_outlined, color: Colors.black),
             onPressed: () {},
@@ -60,12 +83,12 @@ class DetailBarangSaya extends StatelessWidget {
             AspectRatio(
               aspectRatio: 1,
               child: Image.network(
-                product['image']!,
+                (product['images'] as List<dynamic>?)?.isNotEmpty == true
+                    ? (product['images'] as List<dynamic>)[0]
+                    : '',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return Center(
-                    child: Icon(Icons.error_outline, size: 40),
-                  );
+                  return Center(child: Icon(Icons.error_outline, size: 40));
                 },
               ),
             ),
@@ -76,16 +99,13 @@ class DetailBarangSaya extends StatelessWidget {
                 children: [
                   // Product Name
                   Text(
-                    product['name']!,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    product['name'] ?? '',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   // Price
                   Text(
-                    product['price']!,
+                    'Rp ${product['price'] ?? 0}',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -121,9 +141,7 @@ class DetailBarangSaya extends StatelessWidget {
                             ),
                             Text(
                               'Bandung',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                              ),
+                              style: TextStyle(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -163,10 +181,7 @@ class DetailBarangSaya extends StatelessWidget {
                   // Description
                   Text(
                     'Deskripsi',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -187,105 +202,15 @@ class DetailBarangSaya extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [
-                      'Vintage',
-                      'DVD',
-                      'Hiburan',
-                      'Other',
-                    ].map((tag) => _buildTag(tag)).toList(),
+                    children:
+                        [
+                          'Vintage',
+                          'DVD',
+                          'Hiburan',
+                          'Other',
+                        ].map((tag) => _buildTag(tag)).toList(),
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditDetailBarangToko(product: product),
-                    ),
-                  );
-                },
-                child: Text('Edit produk'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: Colors.grey[300]!),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Hapus produk'),
-                        content: Text('Apakah kamu yakin ingin menghapus produk ini?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(); // Close the dialog
-                            },
-                            child: Text('BATAL'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.grey[700],
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.of(context).pop(); // Close the dialog
-                              
-                              // Call delete service
-                              bool success = await HapusBarangService.hapusBarang(context, product);
-                              
-                              if (success) {
-                                // Navigate back to previous screen after successful deletion
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: Text('HAPUS'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.red,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text('Hapus Produk'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
               ),
             ),
           ],
@@ -299,20 +224,11 @@ class DetailBarangSaya extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
           SizedBox(width: 8),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -326,13 +242,7 @@ class DetailBarangSaya extends StatelessWidget {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Text(
-        tag,
-        style: TextStyle(
-          fontSize: 14,
-          color: Colors.grey[700],
-        ),
-      ),
+      child: Text(tag, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
     );
   }
-} 
+}
