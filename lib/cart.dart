@@ -132,7 +132,17 @@ class _CartPageState extends State<CartPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Image.network(item['image']),
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Image.network(
+                          item['image'],
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ],
                   ),
                   title: Text(item['name']),
@@ -177,7 +187,14 @@ class _CartPageState extends State<CartPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: selectedItems.isEmpty ? null : () {},
+                    onPressed: selectedItems.isEmpty ? null : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PesananDiproses(),
+                        ),
+                      );
+                    },
                     child: const Text('Beli'),
                   ),
                 ),

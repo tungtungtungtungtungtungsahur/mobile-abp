@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pesananSelesai.dart';
 
 class PesananDiproses extends StatelessWidget {
   const PesananDiproses({Key? key}) : super(key: key);
@@ -17,6 +18,7 @@ class PesananDiproses extends StatelessWidget {
           'Diproses',
           style: TextStyle(color: Colors.black),
         ),
+        centerTitle: true,
         actions: [
           Stack(
             children: [
@@ -49,9 +51,56 @@ class PesananDiproses extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Order list
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PesananDiproses(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[200],
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: const Text("Diproses"),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PesananSelesai(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[200],
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: const Text("Selesai"),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               children: [
                 _buildOrderItem(
                   'Mall ORI Watsons Indonesia Official',
@@ -93,33 +142,12 @@ class PesananDiproses extends StatelessWidget {
     );
   }
 
-  Widget _buildTab(String text, bool isSelected) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: isSelected ? Colors.red : Colors.transparent,
-            width: 2,
-          ),
-        ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isSelected ? Colors.red : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
   Widget _buildOrderItem(String store, String product, String originalPrice, 
       String discountedPrice, String totalPrice, String imagePath) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -128,7 +156,7 @@ class PesananDiproses extends StatelessWidget {
               children: [
                 Text(
                   store,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
                   'Diproses',
@@ -136,7 +164,7 @@ class PesananDiproses extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -148,31 +176,31 @@ class PesananDiproses extends StatelessWidget {
                   ),
                   child: Image.asset(imagePath, fit: BoxFit.cover),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(product),
                       if (originalPrice.isNotEmpty) ...[
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           originalPrice,
-                          style: TextStyle(
+                          style: const TextStyle(
                             decoration: TextDecoration.lineThrough,
                             color: Colors.grey,
                           ),
                         ),
                       ],
                       if (discountedPrice.isNotEmpty) ...[
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           discountedPrice,
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
                       if (totalPrice.isNotEmpty) ...[
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text('Total 1 produk: $totalPrice'),
                       ],
                     ],
@@ -180,7 +208,7 @@ class PesananDiproses extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
               child: OutlinedButton(
