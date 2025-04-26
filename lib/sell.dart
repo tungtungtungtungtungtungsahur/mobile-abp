@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'profile_barang.dart'; // Make sure this import is correct
 
 class SellPage extends StatefulWidget {
   @override
@@ -36,6 +38,12 @@ class _SellPageState extends State<SellPage> {
   final List<String> styles = ['Batik', 'Casual', 'Formal', 'Sporty', 'Vintage', 'Modern', 'Minimalis', 'Other'];
 
   Future<void> _pickImage() async {
+    if (_selectedImages.length >= 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Maksimal upload 4 foto')),
+      );
+      return;
+    }
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
@@ -160,6 +168,7 @@ class _SellPageState extends State<SellPage> {
               onPressed: () {
                 if (_priceController.text.isNotEmpty && 
                     int.parse(_priceController.text) > 0) {
+                  setState(() {});
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -186,11 +195,8 @@ class _SellPageState extends State<SellPage> {
             TextButton(
               child: Text('OK'),
               onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/katalog',
-                ); // Navigasi ke katalog
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.pushReplacementNamed(context, '/profile_barang');
               },
             ),
           ],
@@ -200,34 +206,67 @@ class _SellPageState extends State<SellPage> {
   }
 
   bool _validateInputs() {
-    if (_nameController.text.isEmpty ||
-        _priceController.text.isEmpty ||
-        _descriptionController.text.isEmpty ||
-        _selectedCategory == null ||
-        _selectedCondition == null ||
-        _selectedStyle == null) {
+    if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mohon lengkapi semua data produk')),
+        SnackBar(content: Text('Nama produk tidak boleh kosong')),
+      );
+      return false;
+    }
+    if (_priceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Harga produk tidak boleh kosong')),
+      );
+      return false;
+    }
+    if (_descriptionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Deskripsi produk tidak boleh kosong')),
+      );
+      return false;
+    }
+    if (_selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Kategori produk harus dipilih')),
+      );
+      return false;
+    }
+    if (_selectedCondition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Kondisi produk harus dipilih')),
+      );
+      return false;
+    }
+    if (_selectedStyle == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Style produk harus dipilih')),
       );
       return false;
     }
     return true;
   }
 
-  void _handleUpload() {
+  void _handleUpload() async {
     if (_validateInputs()) {
       final productData = {
         'name': _nameController.text,
-        'price': _priceController.text,
+        'price': int.tryParse(_priceController.text) ?? 0,
         'description': _descriptionController.text,
         'category': _selectedCategory,
         'condition': _selectedCondition,
         'style': _selectedStyle,
+        'images': _selectedImages.map((e) => e.path).toList(),
+        'createdAt': FieldValue.serverTimestamp(),
       };
 
-      // Use productData here
-      print('Uploading product: $productData');
-      _showSuccessDialog(context);
+      try {
+        await FirebaseFirestore.instance.collection('products').add(productData);
+        Navigator.pushReplacementNamed(context, '/profile_barang');
+      } catch (e) {
+        print('Error saving product: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyimpan produk: $e')),
+        );
+      }
     }
   }
 
@@ -330,24 +369,39 @@ class _SellPageState extends State<SellPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Pilih hingga 8 foto',
+                    'Pilih hingga 4 foto',
                     style: TextStyle(color: Colors.black54, fontSize: 12),
+                  ),                 
+                ],
+              ),
+            ),
+            Divider(height: 24),
+
+            // Product Name
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Nama Produk',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Baca tips foto',
-                      style: TextStyle(color: Colors.blue[700], fontSize: 12),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size(0, 0),
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      hintText: 'Masukkan nama produk',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            Divider(height: 24),
+            Divider(height: 1),
 
             // Deskripsi
             Padding(
@@ -423,27 +477,6 @@ class _SellPageState extends State<SellPage> {
         ),
         child: Row(
           children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Disimpan sebagai draft')),
-                  );
-                },
-                child: Text(
-                  'Save as draft',
-                  style: TextStyle(color: Colors.black),
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  side: BorderSide(color: Colors.grey[300]!),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
                 onPressed: _handleUpload,

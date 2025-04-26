@@ -14,6 +14,7 @@ class EditDetailBarangToko extends StatefulWidget {
 class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   int _charCount = 26;
   final int _maxChars = 500;
   int _hashtagCount = 6;
@@ -23,7 +24,8 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   String _selectedCondition = 'Baru dengan tag';
   String _selectedPrice = 'Rp 80.000';
 
-  File? _image;
+  List<File> _images = [];
+  final int _maxImages = 4;
   final ImagePicker _picker = ImagePicker();
 
   final List<String> _categories = [
@@ -185,10 +187,25 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   }
 
   Future<void> _pickImage() async {
+    if (_images.length >= _maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Maksimal upload 4 foto')),
+      );
+      return;
+    }
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        _image = File(image.path);
+        _images.add(File(image.path));
+      });
+    }
+  }
+
+  Future<void> _changeImage(int index) async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _images[index] = File(image.path);
       });
     }
   }
@@ -224,86 +241,99 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Single Photo
+            // Photo Upload/Change Link
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-              child: Center(
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
-                      image: _image != null
-                          ? DecorationImage(
-                              image: FileImage(_image!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                    child: _image == null
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add, color: Colors.black54, size: 32),
-                              SizedBox(height: 8),
-                              Text('Tambah foto',
-                                  style: TextStyle(color: Colors.black54, fontSize: 14)),
-                            ],
-                          )
-                        : Stack(
-                            children: [
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _image = null;
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black54,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                  ),
+              child: SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _images.length < _maxImages ? _images.length + 1 : _maxImages,
+                  itemBuilder: (context, index) {
+                    if (index < _images.length) {
+                      return Stack(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _changeImage(index),
+                            child: Container(
+                              width: 120,
+                              margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                image: DecorationImage(
+                                  image: FileImage(_images[index]),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
+                            ),
+                          ),
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: IconButton(
+                              icon: Icon(Icons.close, color: Colors.white),
+                              onPressed: () {
+                                setState(() {
+                                  _images.removeAt(index);
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      // Add photo button
+                      return GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          width: 120,
+                          margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add, color: Colors.black54),
+                              SizedBox(height: 4),
+                              Text('Tambah foto', style: TextStyle(color: Colors.black54, fontSize: 12)),
                             ],
                           ),
-                  ),
+                        ),
+                      );
+                    }
+                  },
                 ),
               ),
             ),
+            Divider(height: 1),
+
+            // Product Name
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Klik dan tarik untuk ngubah posisi',
-                      style: TextStyle(color: Colors.black54, fontSize: 12)),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text('Baca tips foto',
-                        style: TextStyle(color: Colors.blue[700], fontSize: 12)),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size(0, 0),
+                  Text(
+                    'Nama Produk',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      hintText: 'Masukkan nama produk',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            Divider(height: 24),
+            Divider(height: 1),
 
             // Description
             Padding(
@@ -446,6 +476,7 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   void dispose() {
     _descriptionController.dispose();
     _priceController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 }

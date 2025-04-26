@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:project_kel_5/firebase_test.dart';
 import 'firebase_options.dart';
 import 'package:project_kel_5/chat_list_page.dart';
+import 'profile_barang.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins', // Example: Use a custom font if desired
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/firebase_test',
+      initialRoute: '/landingMenu',
       routes: {
         '/landingMenu': (context) => const LandingMenu(),
         '/signin': (context) => const SignInPage(),
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfilePage(),
         '/firebase_test': (context) => const FirebaseTestPage(),
+        '/profile_barang': (context) => ProfileBarang(),
       },
     );
   }
