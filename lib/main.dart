@@ -7,6 +7,7 @@ import 'package:project_kel_5/landingMenu.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:project_kel_5/firebase_test.dart';
 import 'firebase_options.dart';
+import 'package:project_kel_5/chat_list_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
