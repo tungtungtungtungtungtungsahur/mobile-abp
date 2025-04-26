@@ -17,7 +17,7 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   int _hashtagCount = 6;
   
   String _selectedCategory = 'Chelsea boots';
-  String _selectedStyle = 'Batik';
+  String _selectedStyle = 'Casual';
   String _selectedCondition = 'Baru dengan tag';
   String _selectedPrice = 'Rp 80.000';
 
@@ -350,7 +350,15 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
             SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Perubahan berhasil disimpan'),
+                      duration: Duration(seconds: 2),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
                 child: Text('Save'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
