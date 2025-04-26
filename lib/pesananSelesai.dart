@@ -3,6 +3,90 @@ import 'package:flutter/material.dart';
 class PesananSelesai extends StatelessWidget {
   const PesananSelesai({Key? key}) : super(key: key);
 
+  void _showRatingDialog(BuildContext context, String store, String product) {
+    int sellerRating = 0;
+    int productRating = 0;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Beri Nilai'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Penilaian untuk Toko: $store'),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          index < sellerRating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            sellerRating = index + 1;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+                  SizedBox(height: 16),
+                  Text('Penilaian untuk Produk: $product'),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          index < productRating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            productRating = index + 1;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Batal'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Here you can add logic to save the ratings
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Terima kasih atas penilaian Anda!'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: Text('Kirim'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,6 +138,7 @@ class PesananSelesai extends StatelessWidget {
             child: ListView(
               children: [
                 _buildOrderItem(
+                  context,
                   'Mall ORI Watsons Indonesia Official',
                   'Something Nobles Eyeshadow Palette Vol 1',
                   'Rp131.000',
@@ -62,6 +147,7 @@ class PesananSelesai extends StatelessWidget {
                   'assets/eyeshadow.jpg',
                 ),
                 _buildOrderItem(
+                  context,
                   'Serbaaa serbuuu',
                   'kalkulator DX-837B ATK-14/ Calculator 12 D...',
                   '',
@@ -70,6 +156,7 @@ class PesananSelesai extends StatelessWidget {
                   'assets/calculator.jpg',
                 ),
                 _buildOrderItem(
+                  context,
                   'Awicom Label',
                   '10x20 POLYMAILER Plastik Packing ukuran 1...',
                   'Rp10.000',
@@ -78,6 +165,7 @@ class PesananSelesai extends StatelessWidget {
                   'assets/polymailer.jpg',
                 ),
                 _buildOrderItem(
+                  context,
                   'Targetolshop',
                   '1 pack isi 5 roll plastik sampah roll jumbo kant...',
                   '',
@@ -114,7 +202,7 @@ class PesananSelesai extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderItem(String store, String product, String originalPrice, 
+  Widget _buildOrderItem(BuildContext context, String store, String product, String originalPrice, 
       String discountedPrice, String totalPrice, String imagePath) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -184,7 +272,7 @@ class PesananSelesai extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () => _showRatingDialog(context, store, product),
                 child: Text(
                   'Beri Nilai',
                   style: TextStyle(color: Colors.red),
