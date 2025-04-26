@@ -34,14 +34,28 @@ class _SellPageState extends State<SellPage> {
     'Perlengkapan Rumah',
   ];
 
-  final List<String> conditions = ['Baru', 'Bekas', 'Baru dengan tag', 'Bekas seperti baru'];
-  final List<String> styles = ['Batik', 'Casual', 'Formal', 'Sporty', 'Vintage', 'Modern', 'Minimalis', 'Other'];
+  final List<String> conditions = [
+    'Baru',
+    'Bekas',
+    'Baru dengan tag',
+    'Bekas seperti baru',
+  ];
+  final List<String> styles = [
+    'Batik',
+    'Casual',
+    'Formal',
+    'Sporty',
+    'Vintage',
+    'Modern',
+    'Minimalis',
+    'Other',
+  ];
 
   Future<void> _pickImage() async {
     if (_selectedImages.length >= 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Maksimal upload 4 foto')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Maksimal upload 4 foto')));
       return;
     }
     try {
@@ -52,9 +66,9 @@ class _SellPageState extends State<SellPage> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memilih gambar')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memilih gambar')));
     }
   }
 
@@ -166,7 +180,7 @@ class _SellPageState extends State<SellPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (_priceController.text.isNotEmpty && 
+                if (_priceController.text.isNotEmpty &&
                     int.parse(_priceController.text) > 0) {
                   setState(() {});
                   Navigator.pop(context);
@@ -207,9 +221,9 @@ class _SellPageState extends State<SellPage> {
 
   bool _validateInputs() {
     if (_nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Nama produk tidak boleh kosong')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Nama produk tidak boleh kosong')));
       return false;
     }
     if (_priceController.text.isEmpty) {
@@ -225,21 +239,21 @@ class _SellPageState extends State<SellPage> {
       return false;
     }
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kategori produk harus dipilih')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Kategori produk harus dipilih')));
       return false;
     }
     if (_selectedCondition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kondisi produk harus dipilih')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Kondisi produk harus dipilih')));
       return false;
     }
     if (_selectedStyle == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Style produk harus dipilih')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Style produk harus dipilih')));
       return false;
     }
     return true;
@@ -259,13 +273,15 @@ class _SellPageState extends State<SellPage> {
       };
 
       try {
-        await FirebaseFirestore.instance.collection('products').add(productData);
+        await FirebaseFirestore.instance
+            .collection('products')
+            .add(productData);
         Navigator.pushReplacementNamed(context, '/profile_barang');
       } catch (e) {
         print('Error saving product: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menyimpan produk: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal menyimpan produk: $e')));
       }
     }
   }
@@ -279,7 +295,7 @@ class _SellPageState extends State<SellPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.close, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
         title: Text('Jual produk', style: TextStyle(color: Colors.black)),
         actions: [
@@ -310,7 +326,10 @@ class _SellPageState extends State<SellPage> {
                       onTap: _pickImage,
                       child: Container(
                         width: 120,
-                        margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(8),
@@ -336,7 +355,10 @@ class _SellPageState extends State<SellPage> {
                       children: [
                         Container(
                           width: 120,
-                          margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          margin: EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             image: DecorationImage(
@@ -371,7 +393,7 @@ class _SellPageState extends State<SellPage> {
                   Text(
                     'Pilih hingga 4 foto',
                     style: TextStyle(color: Colors.black54, fontSize: 12),
-                  ),                 
+                  ),
                 ],
               ),
             ),
@@ -452,7 +474,10 @@ class _SellPageState extends State<SellPage> {
             // List Items
             GestureDetector(
               onTap: _showCategoryDialog,
-              child: _buildListItem('Category', _selectedCategory ?? 'Pilih kategori'),
+              child: _buildListItem(
+                'Category',
+                _selectedCategory ?? 'Pilih kategori',
+              ),
             ),
             GestureDetector(
               onTap: _showStyleDialog,
@@ -460,11 +485,19 @@ class _SellPageState extends State<SellPage> {
             ),
             GestureDetector(
               onTap: _showConditionDialog,
-              child: _buildListItem('Condition', _selectedCondition ?? 'Pilih kondisi'),
+              child: _buildListItem(
+                'Condition',
+                _selectedCondition ?? 'Pilih kondisi',
+              ),
             ),
             GestureDetector(
               onTap: _showPriceDialog,
-              child: _buildListItem('Price', _priceController.text.isEmpty ? 'Masukkan harga' : 'Rp ${_priceController.text}'),
+              child: _buildListItem(
+                'Price',
+                _priceController.text.isEmpty
+                    ? 'Masukkan harga'
+                    : 'Rp ${_priceController.text}',
+              ),
             ),
           ],
         ),
@@ -508,10 +541,7 @@ class _SellPageState extends State<SellPage> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                value,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+              Text(value, style: TextStyle(color: Colors.grey[600])),
               Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),
