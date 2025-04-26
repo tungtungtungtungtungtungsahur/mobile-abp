@@ -24,6 +24,7 @@ class _CartPageState extends State<CartPage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        automaticallyImplyLeading: false,
         actions: [
           TextButton(
             onPressed: () {
@@ -211,29 +212,6 @@ class _CartPageState extends State<CartPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-//cart status page (will move to another page -make new file later)
-class CartStatusPage extends StatelessWidget {
-  final String status;
-
-  const CartStatusPage({super.key, required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Keranjang - $status'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Text('Halaman $status'),
       ),
     );
   }

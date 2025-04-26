@@ -257,16 +257,35 @@ class _HomeScreenState extends State<HomeScreen> {
             final price = product['price']?.toString() ?? '0';
             final condition = product['condition']?.toString() ?? 'Unknown';
             final sellerId = product['sellerId']?.toString() ?? '';
-            final sellerEmail =
-                product['sellerEmail']?.toString() ?? 'Unknown Seller';
 
-            return _buildProductCard(
-              imageUrl: imageUrl,
-              name: name,
-              price: 'Rp. $price',
-              condition: condition,
-              productId: doc.id,
-              sellerEmail: sellerEmail, // Pass seller email directly
+            return FutureBuilder<DocumentSnapshot>(
+              future: _firestore.collection('users').doc(sellerId).get(),
+              builder: (context, userSnapshot) {
+                if (!userSnapshot.hasData) {
+                  return _buildProductCard(
+                    imageUrl: imageUrl,
+                    name: name,
+                    price: 'Rp. $price',
+                    condition: condition,
+                    productId: doc.id,
+                    sellerUsername: 'Loading...',
+                  );
+                }
+
+                final userData =
+                    userSnapshot.data?.data() as Map<String, dynamic>?;
+                final username =
+                    userData?['username']?.toString() ?? 'Unknown User';
+
+                return _buildProductCard(
+                  imageUrl: imageUrl,
+                  name: name,
+                  price: 'Rp. $price',
+                  condition: condition,
+                  productId: doc.id,
+                  sellerUsername: username,
+                );
+              },
             );
           },
         );
@@ -280,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String price,
     required String condition,
     required String productId,
-    required String sellerEmail, // Add sellerEmail parameter
+    required String sellerUsername,
   }) {
     bool isNew = condition.toLowerCase() == 'new';
     return InkWell(
@@ -296,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'price': price.replaceAll('Rp. ', ''),
                 'condition': condition,
                 'productId': productId,
-                'sellerEmail': sellerEmail,
+                'sellerUsername': sellerUsername,
                 // Add more fields if needed
               },
             ),
@@ -390,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  // Display seller email directly
+                  // Display seller username
                   Row(
                     children: [
                       const Icon(
@@ -400,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        sellerEmail,
+                        '@$sellerUsername',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,

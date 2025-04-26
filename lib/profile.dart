@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
 import 'profile_barang.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late Future<Map<String, dynamic>?> _userDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userDataFuture = _fetchUserData();
+  }
+
+  Future<Map<String, dynamic>?> _fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+    return doc.data();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,39 +48,71 @@ class ProfilePage extends StatelessWidget {
 
               // Profile Section
               Center(
-                child: Column(
-                  children: [
-                    Stack(
+                child: FutureBuilder<Map<String, dynamic>?>(
+                  future: _userDataFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Text('Error: \\${snapshot.error}'),
+                      );
+                    }
+                    final data = snapshot.data;
+                    if (data == null) {
+                      return const Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: Text('User data not found.'),
+                      );
+                    }
+                    return Column(
                       children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundImage: NetworkImage(
-                            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
+                        Stack(
+                          children: [
+                            const CircleAvatar(
+                              radius: 50,
+                              backgroundImage: NetworkImage(
+                                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
+                              ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.edit, size: 20),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          data['name'] ?? '-',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.edit, size: 20),
+                        const SizedBox(height: 4),
+                        Text(
+                          '@${data['username'] ?? '-'}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Sultan Mahesa',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
 

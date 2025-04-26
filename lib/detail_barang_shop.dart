@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'cart.dart';
 import 'cart_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DetailBarangShop extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -16,6 +17,10 @@ class DetailBarangShop extends StatelessWidget {
     final condition = product['condition']?.toString() ?? '-';
     final category = product['category']?.toString() ?? '-';
     final color = product['color']?.toString() ?? '-';
+    final style = product['style']?.toString() ?? '-';
+    final sellerId = product['sellerId']?.toString() ?? '';
+    final createdAt = product['createdAt']?.toDate() ?? DateTime.now();
+    final updatedAt = product['updatedAt']?.toDate();
 
     return Scaffold(
       appBar: AppBar(
@@ -62,37 +67,108 @@ class DetailBarangShop extends StatelessWidget {
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  Text(
+
+                  // Seller Information
+                  if (sellerId.isNotEmpty)
+                    StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(sellerId)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data?.exists == true) {
+                          final sellerData =
+                              snapshot.data?.data() as Map<String, dynamic>?;
+                          final sellerName =
+                              sellerData?['name'] ?? 'Unknown Seller';
+                          final sellerUsername =
+                              sellerData?['username'] ?? 'unknown';
+                          return Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.grey[300],
+                                  child: const Icon(Icons.person),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        sellerName,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        '@$sellerUsername',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    )
+                  else
+                    const Text('Seller information not available'),
+                  const SizedBox(height: 16),
+
+                  // Product Details Section
+                  const Text(
+                    'Detail Produk',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildDetailRow('Kategori', category),
+                  _buildDetailRow('Kondisi', condition),
+                  _buildDetailRow('Warna', color),
+                  _buildDetailRow('Style', style),
+                  const SizedBox(height: 16),
+
+                  // Description Section
+                  const Text(
                     'Deskripsi',
                     style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800]),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(description),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Text('Kategori: ',
-                          style: TextStyle(color: Colors.grey[700])),
-                      Text(category),
-                    ],
+
+                  // Product Metadata
+                  const Text(
+                    'Informasi Tambahan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Text('Kondisi: ',
-                          style: TextStyle(color: Colors.grey[700])),
-                      Text(condition),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text('Warna: ',
-                          style: TextStyle(color: Colors.grey[700])),
-                      Text(color),
-                    ],
-                  ),
+                  const SizedBox(height: 8),
+                  _buildDetailRow('Dibuat', _formatDate(createdAt)),
+                  if (updatedAt != null)
+                    _buildDetailRow('Diperbarui', _formatDate(updatedAt)),
                 ],
               ),
             ),
@@ -111,7 +187,7 @@ class DetailBarangShop extends StatelessWidget {
                   productForCart['id'] = product['productId'];
                   productForCart['sellerId'] = product['sellerId'] ?? 'unknown';
                   CartService.addToCart(productForCart);
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const CartPage()),
                   );
@@ -145,12 +221,34 @@ class DetailBarangShop extends StatelessWidget {
                   ),
                   elevation: 4,
                 ),
-                child: const Text('Beli'),
+                child: const Text('Chat'),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

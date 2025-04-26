@@ -25,6 +25,7 @@ class ChatListPage extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance

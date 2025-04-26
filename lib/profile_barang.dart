@@ -14,11 +14,23 @@ class ProfileBarang extends StatefulWidget {
 class _ProfileBarangState extends State<ProfileBarang>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late Future<Map<String, dynamic>?> _userDataFuture;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _userDataFuture = _fetchUserData();
+  }
+
+  Future<Map<String, dynamic>?> _fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+    return doc.data();
   }
 
   @override
@@ -42,131 +54,151 @@ class _ProfileBarangState extends State<ProfileBarang>
           // Profile Section
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
+            child: FutureBuilder<Map<String, dynamic>?>(
+              future: _userDataFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text('Error: \\${snapshot.error}'),
+                  );
+                }
+                final data = snapshot.data;
+                if (data == null) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: Text('User data not found.'),
+                  );
+                }
+                return Column(
                   children: [
-                    const CircleAvatar(
-                      radius: 40,
-                      backgroundImage: NetworkImage(
-                        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Sultan Mahesa',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                '@sultanma',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.verified,
-                                      color: Colors.white,
-                                      size: 12,
-                                    ),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      'Terverifikasi',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.location_on,
-                                size: 16,
-                                color: Colors.grey[600],
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Bandung',
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
                     Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.share),
-                          onPressed: () {},
+                        const CircleAvatar(
+                          radius: 40,
+                          backgroundImage: NetworkImage(
+                            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
+                          ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          '5.0 ',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data['name'] ?? '-',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '@${data['username'] ?? '-'}',
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.verified,
+                                          color: Colors.white,
+                                          size: 12,
+                                        ),
+                                        SizedBox(width: 2),
+                                        Text(
+                                          'Terverifikasi',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Bandung',
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                         Row(
-                          children: List.generate(
-                            5,
-                            (index) => const Icon(
-                              Icons.star,
-                              size: 16,
-                              color: Colors.amber,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.share),
+                              onPressed: () {},
                             ),
-                          ),
-                        ),
-                        const Text(
-                          ' (100)',
-                          style: TextStyle(color: Colors.grey),
+                          ],
                         ),
                       ],
                     ),
-                    const Spacer(),
-                    Text(
-                      'Tergabung 1 tahun',
-                      style: TextStyle(color: Colors.grey[600]),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              '5.0 ',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Row(
+                              children: List.generate(
+                                5,
+                                (index) => const Icon(
+                                  Icons.star,
+                                  size: 16,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              ' (100)',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                      ],
                     ),
                   ],
-                ),
-              ],
+                );
+              },
             ),
           ),
           // Tab Bar
@@ -218,7 +250,8 @@ class _ProfileBarangState extends State<ProfileBarang>
                 .where('sellerId', isEqualTo: currentUser.uid)
                 .snapshots(),
             builder: (context, snapshot) {
-              print('Snapshot state: ${snapshot.connectionState}'); // Debug print
+              print(
+                  'Snapshot state: ${snapshot.connectionState}'); // Debug print
               print('Snapshot has data: ${snapshot.hasData}'); // Debug print
               print('Snapshot error: ${snapshot.error}'); // Debug print
 
@@ -231,11 +264,13 @@ class _ProfileBarangState extends State<ProfileBarang>
               }
 
               final products = snapshot.data?.docs ?? [];
-              print('Number of products found: ${products.length}'); // Debug print
+              print(
+                  'Number of products found: ${products.length}'); // Debug print
 
               return Text(
                 '${products.length} Barang',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               );
             },
           ),
