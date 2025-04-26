@@ -48,7 +48,7 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 // Logo
                 Image.asset(
-                  'images/barbek.png',
+                  'images/barbek2.png',
                   height: 100,
                 ),
                 const SizedBox(height: 10),

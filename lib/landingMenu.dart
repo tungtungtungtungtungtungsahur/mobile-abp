@@ -14,18 +14,10 @@ class LandingMenu extends StatelessWidget {
             children: [
               // Logo
               Image.asset(
-                'images/barbek.png',
+                'images/barbek2.png',
                 height: 150,
               ),
               const SizedBox(height: 20),
-              const Text(
-                'barbek',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
               const SizedBox(height: 80),
 
               // Tombol Mulai
