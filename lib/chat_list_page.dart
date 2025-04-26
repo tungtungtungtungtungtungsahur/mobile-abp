@@ -7,22 +7,6 @@ class ChatListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Hi Tuman"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(20),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              '${chatItems.where((item) => item.unreadCount > 0).length} Pesan belum dibaca',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-          ),
-        ),
-      ),
       body: ListView(
         children: [
           const Padding(
