@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/auth_service.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -9,9 +10,11 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   bool _obscurePassword = true;
+  bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
 
   @override
   void dispose() {
@@ -20,10 +23,37 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
-  void _handleSignIn() {
+  Future<void> _handleSignIn() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement actual sign in logic
-      Navigator.pushReplacementNamed(context, '/home');
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await _authService.signIn(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -45,6 +75,14 @@ class _SignInPageState extends State<SignInPage> {
                   height: 100,
                 ),
                 const SizedBox(height: 10),
+                const Text(
+                  'barbek',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 30),
 
                 // Email field
@@ -120,8 +158,17 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
                   ),
-                  onPressed: _handleSignIn,
-                  child: const Text('Sign In'),
+                  onPressed: _isLoading ? null : _handleSignIn,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Sign In'),
                 ),
                 const SizedBox(height: 20),
 
