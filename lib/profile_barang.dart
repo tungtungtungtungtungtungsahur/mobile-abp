@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'detail_barang_saya.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'editDetailbarangtoko.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileBarang extends StatefulWidget {
   const ProfileBarang({super.key});
@@ -176,7 +177,6 @@ class _ProfileBarangState extends State<ProfileBarang>
             indicatorColor: Colors.black,
             tabs: const [
               Tab(text: 'Barang'),
-              Tab(text: 'Ulasan'),
               Tab(text: 'Tentang'),
             ],
           ),
@@ -187,8 +187,6 @@ class _ProfileBarangState extends State<ProfileBarang>
               children: [
                 // Barang Tab
                 _buildBarangTab(),
-                // Ulasan Tab
-                const Center(child: Text('Ulasan Content')),
                 // Tentang Tab
                 const Center(child: Text('Tentang Content')),
               ],
@@ -200,17 +198,20 @@ class _ProfileBarangState extends State<ProfileBarang>
   }
 
   Widget _buildBarangTab() {
+    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: StreamBuilder<QuerySnapshot>(
-            stream:
-                FirebaseFirestore.instance.collection('products').snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('products')
+                .where('userId', isEqualTo: currentUserId)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
+                return Text('Error: ${snapshot.error}');
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -228,8 +229,10 @@ class _ProfileBarangState extends State<ProfileBarang>
         ),
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
-            stream:
-                FirebaseFirestore.instance.collection('products').snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('products')
+                .where('userId', isEqualTo: currentUserId)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
@@ -262,12 +265,11 @@ class _ProfileBarangState extends State<ProfileBarang>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (context) => DetailBarangSaya(
-                                  productId: productDoc.id,
-                                  product:
-                                      productDoc.data() as Map<String, dynamic>,
-                                ),
+                            builder: (context) => DetailBarangSaya(
+                              productId: productDoc.id,
+                              product:
+                                  productDoc.data() as Map<String, dynamic>,
+                            ),
                           ),
                         );
                       }
@@ -281,26 +283,25 @@ class _ProfileBarangState extends State<ProfileBarang>
                             child: Container(
                               width: double.infinity,
                               color: Colors.grey[200],
-                              child:
-                                  (product['images'] as List<dynamic>?)
-                                              ?.isNotEmpty ==
-                                          true
-                                      ? Image.network(
-                                        (product['images'] as List<dynamic>)[0],
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (
-                                          context,
-                                          error,
-                                          stackTrace,
-                                        ) {
-                                          return const Center(
-                                            child: Icon(Icons.error),
-                                          );
-                                        },
-                                      )
-                                      : const Center(
-                                        child: Icon(Icons.image_not_supported),
-                                      ),
+                              child: (product['images'] as List<dynamic>?)
+                                          ?.isNotEmpty ==
+                                      true
+                                  ? Image.network(
+                                      (product['images'] as List<dynamic>)[0],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (
+                                        context,
+                                        error,
+                                        stackTrace,
+                                      ) {
+                                        return const Center(
+                                          child: Icon(Icons.error),
+                                        );
+                                      },
+                                    )
+                                  : const Center(
+                                      child: Icon(Icons.image_not_supported),
+                                    ),
                             ),
                           ),
                           Padding(
@@ -336,18 +337,12 @@ class _ProfileBarangState extends State<ProfileBarang>
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      EditDetailBarangToko(
-                                                        productId:
-                                                            productDoc.id,
-                                                        product:
-                                                            productDoc.data()
-                                                                as Map<
-                                                                  String,
-                                                                  dynamic
-                                                                >,
-                                                      ),
+                                              builder: (context) =>
+                                                  EditDetailBarangToko(
+                                                productId: productDoc.id,
+                                                product: productDoc.data()
+                                                    as Map<String, dynamic>,
+                                              ),
                                             ),
                                           );
                                         }

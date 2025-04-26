@@ -9,6 +9,8 @@ import 'package:project_kel_5/firebase_test.dart';
 import 'firebase_options.dart';
 import 'package:project_kel_5/chat_list_page.dart';
 import 'profile_barang.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +23,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
     return MaterialApp(
       title: 'Flutter E-commerce UI',
       theme: ThemeData(
