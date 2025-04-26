@@ -18,13 +18,13 @@ class DetailBarangSaya extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           if (productId != null) ...[
             IconButton(
-              icon: Icon(Icons.edit, color: Colors.black),
+              icon: const Icon(Icons.edit, color: Colors.black),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -39,24 +39,24 @@ class DetailBarangSaya extends StatelessWidget {
               },
             ),
             IconButton(
-              icon: Icon(Icons.delete, color: Colors.black),
+              icon: const Icon(Icons.delete, color: Colors.black),
               onPressed: () async {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder:
                       (context) => AlertDialog(
-                        title: Text('Hapus Produk'),
-                        content: Text(
+                        title: const Text('Hapus Produk'),
+                        content: const Text(
                           'Apakah Anda yakin ingin menghapus produk ini?',
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: Text('Batal'),
+                            child: const Text('Batal'),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
-                            child: Text('Hapus'),
+                            child: const Text('Hapus'),
                           ),
                         ],
                       ),
@@ -70,7 +70,7 @@ class DetailBarangSaya extends StatelessWidget {
             ),
           ],
           IconButton(
-            icon: Icon(Icons.share_outlined, color: Colors.black),
+            icon: const Icon(Icons.share_outlined, color: Colors.black),
             onPressed: () {},
           ),
         ],
@@ -88,7 +88,7 @@ class DetailBarangSaya extends StatelessWidget {
                     : '',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return Center(child: Icon(Icons.error_outline, size: 40));
+                  return const Center(child: Icon(Icons.error_outline, size: 40));
                 },
               ),
             ),
@@ -100,39 +100,39 @@ class DetailBarangSaya extends StatelessWidget {
                   // Product Name
                   Text(
                     product['name'] ?? '',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   // Price
                   Text(
                     'Rp ${product['price'] ?? 0}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.orange,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   // Seller Info
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 20,
                           backgroundImage: NetworkImage(
                             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Su_C6HSatMIb9Z4j0K5xce2QiCvmKSf4Qg&s',
                           ),
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Sigit',
                               style: TextStyle(
                                 fontSize: 16,
@@ -145,9 +145,9 @@ class DetailBarangSaya extends StatelessWidget {
                             ),
                           ],
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 6,
                           ),
@@ -155,7 +155,7 @@ class DetailBarangSaya extends StatelessWidget {
                             color: Colors.blue,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
@@ -177,14 +177,14 @@ class DetailBarangSaya extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   // Description
-                  Text(
+                  const Text(
                     'Deskripsi',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: 8),
+                  const Text(
                     'Deskripsi barangmu.\n\nMulai dengan judul, lalu tambahin detail termasuk bahan, kondisi, ukuran, dan gaya.',
                     style: TextStyle(
                       fontSize: 16,
@@ -192,12 +192,12 @@ class DetailBarangSaya extends StatelessWidget {
                       height: 1.5,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   // Additional Info
                   _buildInfoItem('Kategori', 'DVD'),
                   _buildInfoItem('Kondisi', 'Baru tanpa tag'),
                   _buildInfoItem('Warna', 'TAN'),
-                  Divider(height: 32),
+                  const Divider(height: 32),
                   // Tags
                   Wrap(
                     spacing: 8,
@@ -225,10 +225,10 @@ class DetailBarangSaya extends StatelessWidget {
       child: Row(
         children: [
           Text(label, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             value,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -237,7 +237,7 @@ class DetailBarangSaya extends StatelessWidget {
 
   Widget _buildTag(String tag) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(16),
