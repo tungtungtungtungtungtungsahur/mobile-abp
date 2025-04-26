@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'chat_detail_page.dart'; // Import halaman detail chat
 
 class ChatListPage extends StatelessWidget {
   const ChatListPage({super.key});
@@ -16,7 +17,7 @@ class ChatListPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
-              '6 Pesan belum dibaca',
+              '${chatItems.where((item) => item.unreadCount > 0).length} Pesan belum dibaca',
               style: TextStyle(color: Colors.grey[600], fontSize: 12),
             ),
           ),
@@ -49,6 +50,9 @@ class ChatListPage extends StatelessWidget {
   }
 
   Widget _buildChatTile(ChatItem chat, BuildContext context) {
+    final isUnread = chat.unreadCount > 0;
+    final fontWeight = isUnread ? FontWeight.bold : FontWeight.normal;
+
     return ListTile(
       leading: GestureDetector(
         onTap: () {
@@ -60,12 +64,18 @@ class ChatListPage extends StatelessWidget {
         ),
       ),
       title: Text(chat.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(chat.message, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(
+        chat.message,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontWeight: fontWeight),
+      ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(chat.time, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          if (chat.unreadCount > 0)
+          Text(chat.time, style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: fontWeight)),
+          if (isUnread)
             Container(
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.all(6),
@@ -75,13 +85,18 @@ class ChatListPage extends StatelessWidget {
               ),
               child: Text(
                 chat.unreadCount.toString(),
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ),
         ],
       ),
       onTap: () {
-        // TODO: Navigate to chat detail screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatDetailPage(name: chat.name, avatarUrl: chat.avatarUrl),
+          ),
+        );
       },
     );
   }
@@ -137,11 +152,11 @@ class ChatItem {
 }
 
 List<ChatItem> chatItems = [
-  ChatItem('Karina', 'Minusnya dimana ya kak?', '19:45', 2, 'https://randomuser.me/api/portraits/women/1.jpg'),
-  ChatItem('Sigma Boy', '✓ Bisa nego tipis ya kak', '18:41', 0, 'https://randomuser.me/api/portraits/men/1.jpg'),
+  ChatItem('Karina', 'Minusnya dimana ya kak?', '19:45', 2, '/images/rina.jpg'),
+  ChatItem('Ravi', 'Bisa nego tipis ya kak', '18:41', 0, '/images/ravi.jpg'),
   ChatItem('Archen', 'Permisi, bisa lihat kondisi realnya kak?', '17:45', 2, '/images/archen.jpg'),
-  ChatItem('Kak Gem', 'kak, jual kata-kata?', '17:20', 0, 'https://randomuser.me/api/portraits/men/3.jpg'),
-  ChatItem('Brandon salam', '✓ baik kak, sampai bertemu di lokasi ya', '16:31', 0, 'https://randomuser.me/api/portraits/men/4.jpg'),
-  ChatItem('Anita', 'Minusnya apa ya kak?', '12:42', 2, 'https://randomuser.me/api/portraits/women/2.jpg'),
-  ChatItem('Juju', 'Kak, bisa dikirim ke lokasi aku ga ya?', '12:03', 0, 'https://randomuser.me/api/portraits/women/3.jpg'),
+  ChatItem('Kak Gem', 'kak, jual kata-kata?', '17:20', 0, '/images/gem.png'),
+  ChatItem('Wildan', 'baik kak, sampai bertemu di lokasi ya', '16:31', 0, '/images/wildan.jpg'),
+  ChatItem('Amiera', 'Minusnya apa ya kak?', '12:42', 2, '/images/amiera.jpg'),
+  ChatItem('Denis', 'Kak, bisa dikirim ke lokasi aku ga ya?', '12:03', 0, '/images/don.png'),
 ];
