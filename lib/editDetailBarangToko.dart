@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class EditDetailBarangToko extends StatefulWidget {
   final Map<String, String> product;
@@ -20,6 +22,9 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   String _selectedStyle = 'Casual';
   String _selectedCondition = 'Baru dengan tag';
   String _selectedPrice = 'Rp 80.000';
+
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
 
   final List<String> _categories = [
     'Fashion',
@@ -179,6 +184,15 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
     );
   }
 
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _image = File(image.path);
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -210,34 +224,64 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Photo Grid
-            Container(
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 8,
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: 120,
-                    margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            // Single Photo
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+              child: Center(
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    width: 140,
+                    height: 140,
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
+                      image: _image != null
+                          ? DecorationImage(
+                              image: FileImage(_image!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: index == 0
+                    child: _image == null
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.add, color: Colors.black54),
-                              SizedBox(height: 4),
+                              Icon(Icons.add, color: Colors.black54, size: 32),
+                              SizedBox(height: 8),
                               Text('Tambah foto',
-                                  style: TextStyle(color: Colors.black54, fontSize: 12)),
+                                  style: TextStyle(color: Colors.black54, fontSize: 14)),
                             ],
                           )
-                        : Container(),
-                  );
-                },
+                        : Stack(
+                            children: [
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _image = null;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
               ),
             ),
             Padding(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class SellPage extends StatefulWidget {
   @override
@@ -9,6 +11,8 @@ class _SellPageState extends State<SellPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  List<File> _selectedImages = [];
   String? _selectedCategory;
   String? _selectedCondition;
   String? _selectedStyle;
@@ -30,6 +34,21 @@ class _SellPageState extends State<SellPage> {
 
   final List<String> conditions = ['Baru', 'Bekas', 'Baru dengan tag', 'Bekas seperti baru'];
   final List<String> styles = ['Batik', 'Casual', 'Formal', 'Sporty', 'Vintage', 'Modern', 'Minimalis', 'Other'];
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _selectedImages.add(File(image.path));
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar')),
+      );
+    }
+  }
 
   void _showCategoryDialog() {
     showDialog(
@@ -244,34 +263,64 @@ class _SellPageState extends State<SellPage> {
               height: 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: 8,
+                itemCount: _selectedImages.length + 1,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 itemBuilder: (context, index) {
-                  return Container(
-                    width: 120,
-                    margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child:
-                        index == 0
-                            ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add, color: Colors.black54),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Tambah foto',
-                                  style: TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            )
-                            : Container(),
-                  );
+                  if (index == 0) {
+                    return GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: 120,
+                        margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add, color: Colors.black54),
+                            SizedBox(height: 4),
+                            Text(
+                              'Tambah foto',
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Stack(
+                      children: [
+                        Container(
+                          width: 120,
+                          margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            image: DecorationImage(
+                              image: FileImage(_selectedImages[index - 1]),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: IconButton(
+                            icon: Icon(Icons.close, color: Colors.white),
+                            onPressed: () {
+                              setState(() {
+                                _selectedImages.removeAt(index - 1);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  }
                 },
               ),
             ),
