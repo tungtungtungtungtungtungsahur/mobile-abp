@@ -407,24 +407,9 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
         child: Row(
           children: [
             Expanded(
-              child: OutlinedButton(
-                onPressed: () {},
-                child: Text('Move to drafts', 
-                  style: TextStyle(color: Colors.black)
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: Colors.grey[300]!),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
               child: ElevatedButton(
                 onPressed: () {
+                  // Show success message
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Perubahan berhasil disimpan'),
@@ -432,6 +417,11 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
                       backgroundColor: Colors.green,
                     ),
                   );
+                  
+                  // Navigate to profile_barang after successful save
+                  Future.delayed(Duration(seconds: 2), () {
+                    Navigator.pushReplacementNamed(context, '/profile_barang');
+                  });
                 },
                 child: Text('Save'),
                 style: ElevatedButton.styleFrom(
