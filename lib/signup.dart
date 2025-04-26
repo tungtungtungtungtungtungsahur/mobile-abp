@@ -256,7 +256,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Sign Up'),
+                      : const Text('Masuk'),
                 ),
                 const SizedBox(height: 20),
 
@@ -266,7 +266,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     Navigator.pushReplacementNamed(context, '/signin');
                   },
                   child: const Text(
-                    'Already have an account? Sign In',
+                    'Sudah punya akun? Masuk',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),

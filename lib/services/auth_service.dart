@@ -42,25 +42,23 @@ class AuthService {
 
   // Sign in with email and password
   Future<UserCredential?> signIn({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      return await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        throw 'No user found for that email.';
-      } else if (e.code == 'wrong-password') {
-        throw 'Wrong password provided.';
-      }
-      throw e.message ?? 'An error occurred during sign in.';
-    } catch (e) {
-      throw 'An error occurred during sign in.';
+  required String email,
+  required String password,
+}) async {
+  try {
+    return await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found' || e.code == 'wrong-password') {
+      throw 'Email atau password yang dimasukkan salah.';
     }
+    throw e.message ?? 'Terjadi kesalahan saat login.';
+  } catch (e) {
+    throw 'Terjadi kesalahan saat login.';
   }
+}
 
   // Sign out
   Future<void> signOut() async {
