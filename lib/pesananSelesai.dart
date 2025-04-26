@@ -1,9 +1,58 @@
 import 'package:flutter/material.dart';
 
-class PesananSelesai extends StatelessWidget {
+class PesananSelesai extends StatefulWidget {
   const PesananSelesai({Key? key}) : super(key: key);
 
-  void _showRatingDialog(BuildContext context, String store, String product) {
+  @override
+  State<PesananSelesai> createState() => _PesananSelesaiState();
+}
+
+class _PesananSelesaiState extends State<PesananSelesai> {
+  // Dummy order data
+  final List<Map<String, dynamic>> _orders = [
+    {
+      'store': 'Mall ORI Watsons Indonesia Official',
+      'product': 'Something Nobles Eyeshadow Palette Vol 1',
+      'originalPrice': 'Rp131.000',
+      'discountedPrice': 'Rp96.600',
+      'totalPrice': 'Rp83.312',
+      'imagePath': 'assets/eyeshadow.jpg',
+      'sellerRating': null,
+      'productRating': null,
+    },
+    {
+      'store': 'Serbaaa serbuuu',
+      'product': 'kalkulator DX-837B ATK-14/ Calculator 12 D...',
+      'originalPrice': '',
+      'discountedPrice': 'Rp21.460',
+      'totalPrice': 'Rp23.460',
+      'imagePath': 'assets/calculator.jpg',
+      'sellerRating': null,
+      'productRating': null,
+    },
+    {
+      'store': 'Awicom Label',
+      'product': '10x20 POLYMAILER Plastik Packing ukuran 1...',
+      'originalPrice': 'Rp10.000',
+      'discountedPrice': 'Rp6.160',
+      'totalPrice': 'Rp6.820',
+      'imagePath': 'assets/polymailer.jpg',
+      'sellerRating': null,
+      'productRating': null,
+    },
+    {
+      'store': 'Targetolshop',
+      'product': '1 pack isi 5 roll plastik sampah roll jumbo kant...',
+      'originalPrice': '',
+      'discountedPrice': '',
+      'totalPrice': '',
+      'imagePath': 'assets/trash_bag.jpg',
+      'sellerRating': null,
+      'productRating': null,
+    },
+  ];
+
+  void _showRatingDialog(BuildContext context, int index) {
     int sellerRating = 0;
     int productRating = 0;
 
@@ -11,47 +60,47 @@ class PesananSelesai extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (context, setStateDialog) {
             return AlertDialog(
               title: Text('Beri Nilai'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Penilaian untuk Toko: $store'),
+                  Text('Penilaian untuk Toko: ${_orders[index]['store']}'),
                   SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
+                    children: List.generate(5, (i) {
                       return IconButton(
                         icon: Icon(
-                          index < sellerRating ? Icons.star : Icons.star_border,
+                          i < sellerRating ? Icons.star : Icons.star_border,
                           color: Colors.amber,
                           size: 30,
                         ),
                         onPressed: () {
-                          setState(() {
-                            sellerRating = index + 1;
+                          setStateDialog(() {
+                            sellerRating = i + 1;
                           });
                         },
                       );
                     }),
                   ),
                   SizedBox(height: 16),
-                  Text('Penilaian untuk Produk: $product'),
+                  Text('Penilaian untuk Produk: ${_orders[index]['product']}'),
                   SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
+                    children: List.generate(5, (i) {
                       return IconButton(
                         icon: Icon(
-                          index < productRating ? Icons.star : Icons.star_border,
+                          i < productRating ? Icons.star : Icons.star_border,
                           color: Colors.amber,
                           size: 30,
                         ),
                         onPressed: () {
-                          setState(() {
-                            productRating = index + 1;
+                          setStateDialog(() {
+                            productRating = i + 1;
                           });
                         },
                       );
@@ -68,14 +117,22 @@ class PesananSelesai extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Here you can add logic to save the ratings
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Terima kasih atas penilaian Anda!'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
+                    if (sellerRating > 0 && productRating > 0) {
+                      setState(() {
+                        _orders[index]['sellerRating'] = sellerRating;
+                        _orders[index]['productRating'] = productRating;
+                        // Move rated order to the end
+                        final ratedOrder = _orders.removeAt(index);
+                        _orders.add(ratedOrder);
+                      });
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Terima kasih atas penilaian Anda!'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
                   },
                   child: Text('Kirim'),
                 ),
@@ -135,45 +192,12 @@ class PesananSelesai extends StatelessWidget {
         children: [
           // Order list
           Expanded(
-            child: ListView(
-              children: [
-                _buildOrderItem(
-                  context,
-                  'Mall ORI Watsons Indonesia Official',
-                  'Something Nobles Eyeshadow Palette Vol 1',
-                  'Rp131.000',
-                  'Rp96.600',
-                  'Rp83.312',
-                  'assets/eyeshadow.jpg',
-                ),
-                _buildOrderItem(
-                  context,
-                  'Serbaaa serbuuu',
-                  'kalkulator DX-837B ATK-14/ Calculator 12 D...',
-                  '',
-                  'Rp21.460',
-                  'Rp23.460',
-                  'assets/calculator.jpg',
-                ),
-                _buildOrderItem(
-                  context,
-                  'Awicom Label',
-                  '10x20 POLYMAILER Plastik Packing ukuran 1...',
-                  'Rp10.000',
-                  'Rp6.160',
-                  'Rp6.820',
-                  'assets/polymailer.jpg',
-                ),
-                _buildOrderItem(
-                  context,
-                  'Targetolshop',
-                  '1 pack isi 5 roll plastik sampah roll jumbo kant...',
-                  '',
-                  '',
-                  '',
-                  'assets/trash_bag.jpg',
-                ),
-              ],
+            child: ListView.builder(
+              itemCount: _orders.length,
+              itemBuilder: (context, index) {
+                final order = _orders[index];
+                return _buildOrderItem(context, order, index);
+              },
             ),
           ),
         ],
@@ -181,29 +205,7 @@ class PesananSelesai extends StatelessWidget {
     );
   }
 
-  Widget _buildTab(String text, bool isSelected) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: isSelected ? Colors.red : Colors.transparent,
-            width: 2,
-          ),
-        ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isSelected ? Colors.red : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrderItem(BuildContext context, String store, String product, String originalPrice, 
-      String discountedPrice, String totalPrice, String imagePath) {
+  Widget _buildOrderItem(BuildContext context, Map<String, dynamic> order, int index) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Padding(
@@ -215,7 +217,7 @@ class PesananSelesai extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  store,
+                  order['store'],
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -234,34 +236,34 @@ class PesananSelesai extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Image.asset(imagePath, fit: BoxFit.cover),
+                  child: Image.asset(order['imagePath'], fit: BoxFit.cover),
                 ),
                 SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(product),
-                      if (originalPrice.isNotEmpty) ...[
+                      Text(order['product']),
+                      if (order['originalPrice'].isNotEmpty) ...[
                         SizedBox(height: 4),
                         Text(
-                          originalPrice,
+                          order['originalPrice'],
                           style: TextStyle(
                             decoration: TextDecoration.lineThrough,
                             color: Colors.grey,
                           ),
                         ),
                       ],
-                      if (discountedPrice.isNotEmpty) ...[
+                      if (order['discountedPrice'].isNotEmpty) ...[
                         SizedBox(height: 4),
                         Text(
-                          discountedPrice,
+                          order['discountedPrice'],
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
-                      if (totalPrice.isNotEmpty) ...[
+                      if (order['totalPrice'].isNotEmpty) ...[
                         SizedBox(height: 8),
-                        Text('Total 1 produk: $totalPrice'),
+                        Text('Total 1 produk: ${order['totalPrice']}'),
                       ],
                     ],
                   ),
@@ -271,19 +273,34 @@ class PesananSelesai extends StatelessWidget {
             SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
-              child: OutlinedButton(
-                onPressed: () => _showRatingDialog(context, store, product),
-                child: Text(
-                  'Beri Nilai',
-                  style: TextStyle(color: Colors.red),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
+              child: order['sellerRating'] == null || order['productRating'] == null
+                  ? OutlinedButton(
+                      onPressed: () => _showRatingDialog(context, index),
+                      child: Text(
+                        'Beri Nilai',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: List.generate(5, (i) => Icon(
+                                i < order['productRating']
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                color: Colors.amber,
+                                size: 22,
+                              )),
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),
