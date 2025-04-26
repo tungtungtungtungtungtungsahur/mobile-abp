@@ -17,24 +17,15 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -52,6 +43,15 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDAlmUI9hBXNNGmBC5IM2AfH0HKf6zgwDE',
+    appId: '1:560073040051:web:YOUR-WEB-APP-ID',
+    messagingSenderId: '560073040051',
+    projectId: 'barbek-9f083',
+    authDomain: 'barbek-9f083.firebaseapp.com',
+    storageBucket: 'barbek-9f083.firebasestorage.app',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDAlmUI9hBXNNGmBC5IM2AfH0HKf6zgwDE',
     appId: '1:560073040051:android:06e439082bcbb21e5250c6',
@@ -66,7 +66,17 @@ class DefaultFirebaseOptions {
     messagingSenderId: '560073040051',
     projectId: 'barbek-9f083',
     storageBucket: 'barbek-9f083.firebasestorage.app',
+    iosClientId: 'YOUR-IOS-CLIENT-ID',
     iosBundleId: 'com.example.projectKel5',
   );
 
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBCnKI09M6SAvqLESEHvPiGqXCqD41ZSD0',
+    appId: '1:560073040051:ios:faaa5c2273aeb84e5250c6',
+    messagingSenderId: '560073040051',
+    projectId: 'barbek-9f083',
+    storageBucket: 'barbek-9f083.firebasestorage.app',
+    iosClientId: 'YOUR-MACOS-CLIENT-ID',
+    iosBundleId: 'com.example.projectKel5',
+  );
 }
