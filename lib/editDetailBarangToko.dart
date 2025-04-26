@@ -144,7 +144,6 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
             _buildListItem('Category', 'Chelsea boots'),
             _buildListItem('Styles', 'Batik'),
             _buildListItem('Condition', 'Baru dengan tag'),
-            _buildListItem('Colors', 'Red'),
             _buildListItem('Price', 'Rp 80.000'),
           ],
         ),
