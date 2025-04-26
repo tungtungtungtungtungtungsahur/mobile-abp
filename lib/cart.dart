@@ -53,7 +53,7 @@ class _CartPageState extends State<CartPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const CartStatusPage(status: 'Diproses'),
+                        builder: (context) => const PesananDiproses(),
                       ),
                     );
                   },
