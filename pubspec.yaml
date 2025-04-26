@@ -9,13 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-<<<<<<< HEAD
   firebase_core: ^2.27.1
   firebase_auth: ^4.17.9
   cloud_firestore: ^4.15.9
-=======
   image_picker: ^1.0.7
->>>>>>> b69e214df0ee9f000ccb280d75dd978239ea52d2
 
 dev_dependencies:
   flutter_test:

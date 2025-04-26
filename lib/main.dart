@@ -6,10 +6,13 @@ import 'package:project_kel_5/signup.dart';
 import 'package:project_kel_5/landingMenu.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:project_kel_5/firebase_test.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -26,7 +29,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins', // Example: Use a custom font if desired
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/landingMenu',
+      initialRoute: '/firebase_test',
       routes: {
         '/landingMenu': (context) => const LandingMenu(),
         '/signin': (context) => const SignInPage(),
