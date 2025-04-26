@@ -55,7 +55,7 @@ class _SellPageState extends State<SellPage> {
     if (_selectedImages.length >= 4) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Maksimal upload 4 foto')));
+      ).showSnackBar(const SnackBar(content: Text('Maksimal upload 4 foto')));
       return;
     }
     try {
@@ -68,7 +68,7 @@ class _SellPageState extends State<SellPage> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memilih gambar')));
+      ).showSnackBar(const SnackBar(content: Text('Gagal memilih gambar')));
     }
   }
 
@@ -77,7 +77,7 @@ class _SellPageState extends State<SellPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Pilih Kategori'),
+          title: const Text('Pilih Kategori'),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -106,7 +106,7 @@ class _SellPageState extends State<SellPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Pilih Kondisi'),
+          title: const Text('Pilih Kondisi'),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -135,7 +135,7 @@ class _SellPageState extends State<SellPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Pilih Style'),
+          title: const Text('Pilih Style'),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -164,11 +164,11 @@ class _SellPageState extends State<SellPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Masukkan Harga'),
+          title: const Text('Masukkan Harga'),
           content: TextField(
             controller: _priceController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               prefixText: 'Rp ',
               hintText: 'Masukkan harga',
             ),
@@ -176,7 +176,7 @@ class _SellPageState extends State<SellPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Batal'),
+              child: const Text('Batal'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -186,11 +186,11 @@ class _SellPageState extends State<SellPage> {
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Harga harus lebih dari 0')),
+                    const SnackBar(content: Text('Harga harus lebih dari 0')),
                   );
                 }
               },
-              child: Text('Simpan'),
+              child: const Text('Simpan'),
             ),
           ],
         );
@@ -203,11 +203,11 @@ class _SellPageState extends State<SellPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Sukses'),
-          content: Text('Produk berhasil ditambahkan ke katalog'),
+          title: const Text('Sukses'),
+          content: const Text('Produk berhasil ditambahkan ke katalog'),
           actions: [
             TextButton(
-              child: Text('OK'),
+              child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
                 Navigator.pushReplacementNamed(context, '/profile_barang');
@@ -223,37 +223,37 @@ class _SellPageState extends State<SellPage> {
     if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Nama produk tidak boleh kosong')));
+      ).showSnackBar(const SnackBar(content: Text('Nama produk tidak boleh kosong')));
       return false;
     }
     if (_priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Harga produk tidak boleh kosong')),
+        const SnackBar(content: Text('Harga produk tidak boleh kosong')),
       );
       return false;
     }
     if (_descriptionController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Deskripsi produk tidak boleh kosong')),
+        const SnackBar(content: Text('Deskripsi produk tidak boleh kosong')),
       );
       return false;
     }
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Kategori produk harus dipilih')));
+      ).showSnackBar(const SnackBar(content: Text('Kategori produk harus dipilih')));
       return false;
     }
     if (_selectedCondition == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Kondisi produk harus dipilih')));
+      ).showSnackBar(const SnackBar(content: Text('Kondisi produk harus dipilih')));
       return false;
     }
     if (_selectedStyle == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Style produk harus dipilih')));
+      ).showSnackBar(const SnackBar(content: Text('Style produk harus dipilih')));
       return false;
     }
     return true;
@@ -294,17 +294,17 @@ class _SellPageState extends State<SellPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: Colors.black),
+          icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
-        title: Text('Jual produk', style: TextStyle(color: Colors.black)),
+        title: const Text('Jual produk', style: TextStyle(color: Colors.black)),
         actions: [
           IconButton(
-            icon: Icon(Icons.copy_outlined, color: Colors.black),
+            icon: const Icon(Icons.copy_outlined, color: Colors.black),
             onPressed: () {},
           ),
           IconButton(
-            icon: Icon(Icons.folder_outlined, color: Colors.black),
+            icon: const Icon(Icons.folder_outlined, color: Colors.black),
             onPressed: () {},
           ),
         ],
@@ -319,14 +319,14 @@ class _SellPageState extends State<SellPage> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: _selectedImages.length + 1,
-                padding: EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return GestureDetector(
                       onTap: _pickImage,
                       child: Container(
                         width: 120,
-                        margin: EdgeInsets.symmetric(
+                        margin: const EdgeInsets.symmetric(
                           horizontal: 4,
                           vertical: 8,
                         ),
@@ -334,7 +334,7 @@ class _SellPageState extends State<SellPage> {
                           color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Column(
+                        child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.add, color: Colors.black54),
@@ -355,7 +355,7 @@ class _SellPageState extends State<SellPage> {
                       children: [
                         Container(
                           width: 120,
-                          margin: EdgeInsets.symmetric(
+                          margin: const EdgeInsets.symmetric(
                             horizontal: 4,
                             vertical: 8,
                           ),
@@ -371,7 +371,7 @@ class _SellPageState extends State<SellPage> {
                           right: 0,
                           top: 0,
                           child: IconButton(
-                            icon: Icon(Icons.close, color: Colors.white),
+                            icon: const Icon(Icons.close, color: Colors.white),
                             onPressed: () {
                               setState(() {
                                 _selectedImages.removeAt(index - 1);
@@ -385,7 +385,7 @@ class _SellPageState extends State<SellPage> {
                 },
               ),
             ),
-            Padding(
+            const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -397,15 +397,15 @@ class _SellPageState extends State<SellPage> {
                 ],
               ),
             ),
-            Divider(height: 24),
+            const Divider(height: 24),
 
             // Product Name
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Nama Produk',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
@@ -423,15 +423,15 @@ class _SellPageState extends State<SellPage> {
                 ],
               ),
             ),
-            Divider(height: 1),
+            const Divider(height: 1),
 
             // Deskripsi
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Deskripsi',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
@@ -469,7 +469,7 @@ class _SellPageState extends State<SellPage> {
                 ],
               ),
             ),
-            Divider(height: 1),
+            const Divider(height: 1),
 
             // List Items
             GestureDetector(
@@ -503,7 +503,7 @@ class _SellPageState extends State<SellPage> {
         ),
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(top: BorderSide(color: Colors.grey[200]!)),
@@ -513,11 +513,11 @@ class _SellPageState extends State<SellPage> {
             Expanded(
               child: ElevatedButton(
                 onPressed: _handleUpload,
-                child: Text('Upload'),
+                child: const Text('Upload'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -536,19 +536,19 @@ class _SellPageState extends State<SellPage> {
         ListTile(
           title: Text(
             title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(value, style: TextStyle(color: Colors.grey[600])),
-              Icon(Icons.chevron_right, color: Colors.grey),
+              const Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           visualDensity: VisualDensity.compact,
         ),
-        Divider(height: 1),
+        const Divider(height: 1),
       ],
     );
   }

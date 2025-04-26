@@ -5,9 +5,7 @@ import 'package:project_kel_5/signin.dart';
 import 'package:project_kel_5/signup.dart';
 import 'package:project_kel_5/landingMenu.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:project_kel_5/firebase_test.dart';
 import 'firebase_options.dart';
-import 'package:project_kel_5/chat_list_page.dart';
 import 'profile_barang.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,8 +21,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
     return MaterialApp(
       title: 'Flutter E-commerce UI',
       theme: ThemeData(
@@ -40,7 +36,6 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignUpPage(),
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfilePage(),
-        '/firebase_test': (context) => const FirebaseTestPage(),
         '/profile_barang': (context) => ProfileBarang(),
       },
     );
