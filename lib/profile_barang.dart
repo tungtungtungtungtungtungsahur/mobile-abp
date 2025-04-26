@@ -18,7 +18,7 @@ class _ProfileBarangState extends State<ProfileBarang>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -199,6 +199,7 @@ class _ProfileBarangState extends State<ProfileBarang>
 
   Widget _buildBarangTab() {
     final currentUser = FirebaseAuth.instance.currentUser;
+    print('Current User ID: ${currentUser?.uid}'); // Debug print
 
     if (currentUser == null) {
       return const Center(
@@ -214,9 +215,13 @@ class _ProfileBarangState extends State<ProfileBarang>
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
-                .where('userId', isEqualTo: currentUser.uid)
+                .where('sellerId', isEqualTo: currentUser.uid)
                 .snapshots(),
             builder: (context, snapshot) {
+              print('Snapshot state: ${snapshot.connectionState}'); // Debug print
+              print('Snapshot has data: ${snapshot.hasData}'); // Debug print
+              print('Snapshot error: ${snapshot.error}'); // Debug print
+
               if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               }
@@ -226,11 +231,11 @@ class _ProfileBarangState extends State<ProfileBarang>
               }
 
               final products = snapshot.data?.docs ?? [];
+              print('Number of products found: ${products.length}'); // Debug print
 
               return Text(
                 '${products.length} Barang',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               );
             },
           ),
@@ -239,7 +244,7 @@ class _ProfileBarangState extends State<ProfileBarang>
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
-                .where('userId', isEqualTo: currentUser.uid)
+                .where('sellerId', isEqualTo: currentUser.uid)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
