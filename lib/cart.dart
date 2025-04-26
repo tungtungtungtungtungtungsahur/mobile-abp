@@ -177,7 +177,14 @@ class _CartPageState extends State<CartPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: selectedItems.isEmpty ? null : () {},
+                    onPressed: selectedItems.isEmpty ? null : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PesananDiproses(),
+                        ),
+                      );
+                    },
                     child: const Text('Beli'),
                   ),
                 ),
