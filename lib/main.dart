@@ -4,8 +4,12 @@ import 'package:project_kel_5/profile.dart';
 import 'package:project_kel_5/signin.dart';
 import 'package:project_kel_5/signup.dart';
 import 'package:project_kel_5/landingMenu.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:project_kel_5/firebase_test.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -22,13 +26,14 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins', // Example: Use a custom font if desired
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/landingMenu',
+      initialRoute: '/firebase_test',
       routes: {
         '/landingMenu': (context) => const LandingMenu(),
         '/signin': (context) => const SignInPage(),
         '/signup': (context) => const SignUpPage(),
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfilePage(),
+        '/firebase_test': (context) => const FirebaseTestPage(),
       },
     );
   }
