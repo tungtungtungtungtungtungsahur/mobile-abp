@@ -7,6 +7,7 @@ import 'sell.dart';
 import 'chat_list_page.dart';
 import 'cart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'detail_barang_shop.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -284,8 +285,23 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isNew = condition.toLowerCase() == 'new';
     return InkWell(
       onTap: () {
-        // Handle product tap
-        print('Tapped product: $name');
+        // Navigate to detail page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailBarangShop(
+              product: {
+                'imageUrl': imageUrl,
+                'name': name,
+                'price': price.replaceAll('Rp. ', ''),
+                'condition': condition,
+                'productId': productId,
+                'sellerEmail': sellerEmail,
+                // Add more fields if needed
+              },
+            ),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

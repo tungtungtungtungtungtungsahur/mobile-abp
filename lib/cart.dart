@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'pesananSelesai.dart';
 import 'pesananDiproses.dart';
+import 'cart_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -10,195 +12,202 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  //cart items dummy data
-  final List<Map<String, dynamic>> cartItems = const [
-    {
-      'name': 'Nike Air Max Plus 3 Men\'s',
-      'price': 80000,
-      'image': 'images/barbek.png',
-    },
-    {
-      'name': 'Adidas Yung White',
-      'price': 160000,
-      'image': 'images/barbek.png',
-    },
-  ];
-
-  Set<int> selectedItems = {};
-  //total price
-  int get total {
-    return selectedItems.fold(0, (sum, index) => sum + (cartItems[index]['price'] as num).toInt());
-  }
+  bool isEditing = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Keranjang'),
+        title: const Text('Keranjang',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                //button for cart status process and done
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate to Diproses page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PesananDiproses(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[200],
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: const Text("Diproses"),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate to Selesai page (putri's task, will remove later)
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PesananSelesai(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[200],
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: const Text("Selesai"),
-                ),
-              ],
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                isEditing = !isEditing;
+              });
+            },
+            child: Text(
+              isEditing ? 'Selesai' : 'Edit',
+              style: const TextStyle(color: Colors.black),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                var item = cartItems[index];
-                return ListTile(
-                  leading: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            if (selectedItems.contains(index)) {
-                              selectedItems.remove(index);
-                            } else {
-                              selectedItems.add(index);
-                            }
-                          });
-                        },
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: selectedItems.contains(index) ? Colors.black : Colors.grey,
-                              width: 2,
-                            ),
-                            color: selectedItems.contains(index) ? Colors.black : Colors.transparent,
-                          ),
-                          child: selectedItems.contains(index)
-                              ? const Icon(
-                                  Icons.check,
-                                  size: 16,
-                                  color: Colors.white,
-                                )
+        ],
+      ),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: CartService.getCartItems(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final items = snapshot.data ?? [];
+          if (items.isEmpty) {
+            return const Center(child: Text('Keranjang kosong'));
+          }
+
+          // Group by sellerUsername
+          final Map<String, List<Map<String, dynamic>>> grouped = {};
+          for (var item in items) {
+            final sellerUsername = item['sellerUsername'] ?? 'unknown';
+            grouped.putIfAbsent(sellerUsername, () => []).add(item);
+          }
+
+          return ListView.separated(
+            itemCount: grouped.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 24),
+            itemBuilder: (context, groupIndex) {
+              final sellerUsername = grouped.keys.elementAt(groupIndex);
+              final items = grouped[sellerUsername]!;
+              final seller = items.first['seller'] ?? {};
+              final sellerName = seller['name'] ?? 'Seller';
+              final sellerAvatar = seller['avatarUrl'] ?? '';
+              final totalPrice = items.fold<int>(0, (sum, item) {
+                final price = int.tryParse(item['price'].toString()) ?? 0;
+                final quantity = item['quantity'] ?? 1;
+                return sum + (price * quantity).toInt();
+              });
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Seller Info
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: sellerAvatar.isNotEmpty
+                              ? NetworkImage(sellerAvatar)
+                              : null,
+                          child: sellerAvatar.isEmpty
+                              ? const Icon(Icons.person)
                               : null,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
+                        const SizedBox(width: 8),
+                        Text(sellerName,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.circle, color: Colors.green, size: 12),
+                        const SizedBox(width: 4),
+                        Text('${items.length} item',
+                            style: const TextStyle(color: Colors.grey)),
+                        const Spacer(),
+                        Text(
+                            'Rp ${totalPrice.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Product(s)
+                    ...items
+                        .map((item) => _buildProductCard(item, isEditing))
+                        .toList(),
+                    const SizedBox(height: 12),
+                    // Beli sekarang button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: Image.network(
-                          item['image'],
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
-                  title: Text(item['name']),
-                  subtitle: const Text("Fashion"),
-                  trailing: Text("Rp. ${item['price'].toString()}"),
-                  onTap: () {
-                    setState(() {
-                      if (selectedItems.contains(index)) {
-                        selectedItems.remove(index);
-                      } else {
-                        selectedItems.add(index);
-                      }
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('${selectedItems.length} barang'),
-                    Text('Rp. $total'),
-                  ],
-                ),
-                //button for beli (can press if there is selected item)
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        child: const Text('Chat',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18)),
                       ),
                     ),
-                    onPressed: selectedItems.isEmpty ? null : () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PesananDiproses(),
-                        ),
-                      );
-                    },
-                    child: const Text('Beli'),
-                  ),
+                  ],
                 ),
-              ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProductCard(Map<String, dynamic> item, bool isEditing) {
+    final quantity = item['quantity'] ?? 1;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey[100],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              item['imageUrl'] ?? '',
+              width: 120,
+              height: 120,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.broken_image, size: 60),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Rp ${item['price']}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Text(item['name'] ?? '',
+                      style: const TextStyle(fontSize: 15)),
+                  const SizedBox(height: 8),
+                  if (isEditing)
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () {
+                            CartService.removeFromCart(item['id']);
+                          },
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: () {
+                            CartService.updateQuantity(
+                                item['id'], quantity - 1);
+                          },
+                        ),
+                        Text('$quantity'),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            CartService.updateQuantity(
+                                item['id'], quantity + 1);
+                          },
+                        ),
+                      ],
+                    ),
+                ],
+              ),
             ),
           ),
         ],
