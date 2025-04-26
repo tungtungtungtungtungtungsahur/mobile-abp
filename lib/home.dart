@@ -1,43 +1,12 @@
 // lib/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'components/bottom_navigation_bar.dart';
 import 'profile.dart';
 import 'sell.dart';
 import 'chat_list_page.dart';
 import 'cart.dart';
-
-// Placeholder data - replace with your actual data models and fetching logic
-final List<Map<String, dynamic>> recommendedProducts = [
-  {
-    'image':
-        'https://images.stockx.com/360/Air-Jordan-4-Retro-SB-Navy/Images/Air-Jordan-4-Retro-SB-Navy/Lv2/img01.jpg?w=576&q=57&dpr=2&updated_at=1740417865&h=384',
-    'name': 'Nike Air VaporMax Evo',
-    'price': 'Rp. 120.000',
-    'condition': 'New',
-  },
-  {
-    'image':
-        'https://images.stockx.com/images/Supreme-MLB-Teams-Box-Logo-New-Era-Red.jpg?fit=fill&bg=FFFFFF&w=78&h=56&q=57&dpr=2&trim=color&updated_at=1744142786',
-    'name': 'Supreme MLB Cap',
-    'price': 'Rp. 200.000',
-    'condition': 'New',
-  },
-  {
-    'image':
-        'https://id-live-01.slatic.net/p/ec4945dedfeac49e4f83ae12dabc0e44.jpg',
-    'name': 'Lightstick NCT',
-    'price': 'Rp. 300.000',
-    'condition': 'Second',
-  },
-  {
-    'image':
-        'https://www.elektronikmurah.biz/cdn/shop/products/MCM-606-A-1x1.jpg?v=1569564711',
-    'name': 'Rice cooker miyako',
-    'price': 'Rp. 90.000',
-    'condition': 'Second',
-  },
-  // Add more products...
-];
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,11 +17,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0; // For BottomNavigationBar
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      if (index == 2) { // Index 2 is for Sell tab
+      if (index == 2) {
+        // Index 2 is for Sell tab
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => SellPage()),
@@ -108,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             _buildSectionTitle('Rekomendasi Untuk anda'),
             const SizedBox(height: 12),
-            _buildRecommendationsGrid(),
+            _buildProductsStream(),
             const SizedBox(height: 20),
           ],
         ),
@@ -221,26 +192,82 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- Recommendations Grid ---
-  Widget _buildRecommendationsGrid() {
-    return GridView.builder(
-      // Important: Prevent GridView from scrolling independently inside SingleChildScrollView
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Number of columns
-        crossAxisSpacing: 12.0, // Horizontal space between items
-        mainAxisSpacing: 12.0, // Vertical space between items
-        childAspectRatio: 0.7, // Adjust aspect ratio (width / height)
-      ),
-      itemCount: recommendedProducts.length,
-      itemBuilder: (context, index) {
-        final product = recommendedProducts[index];
-        return _buildProductCard(
-          imageUrl: product['image'],
-          name: product['name'],
-          price: product['price'],
-          condition: product['condition'],
+  // --- StreamBuilder for products ---
+  Widget _buildProductsStream() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore.collection('products').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        // More comprehensive null check
+        if (!snapshot.hasData ||
+            snapshot.data == null ||
+            snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text('No products available'),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+        if (docs.isEmpty) {
+          return const Center(
+            child: Text('No products available'),
+          );
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12.0,
+            mainAxisSpacing: 12.0,
+            childAspectRatio: 0.7,
+          ),
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
+            if (index >= docs.length) {
+              return const SizedBox.shrink();
+            }
+
+            final doc = docs[index];
+            if (!doc.exists) {
+              return const SizedBox.shrink();
+            }
+
+            final product = doc.data() as Map<String, dynamic>?;
+            if (product == null) {
+              return const SizedBox.shrink();
+            }
+
+            // Safe access to product fields with null checks
+            final imageUrl = product['imageUrl']?.toString() ?? '';
+            final name = product['name']?.toString() ?? 'No Name';
+            final price = product['price']?.toString() ?? '0';
+            final condition = product['condition']?.toString() ?? 'Unknown';
+            final sellerId = product['sellerId']?.toString() ?? '';
+            final sellerEmail =
+                product['sellerEmail']?.toString() ?? 'Unknown Seller';
+
+            return _buildProductCard(
+              imageUrl: imageUrl,
+              name: name,
+              price: 'Rp. $price',
+              condition: condition,
+              productId: doc.id,
+              sellerEmail: sellerEmail, // Pass seller email directly
+            );
+          },
         );
       },
     );
@@ -251,6 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required String name,
     required String price,
     required String condition,
+    required String productId,
+    required String sellerEmail, // Add sellerEmail parameter
   }) {
     bool isNew = condition.toLowerCase() == 'new';
     return InkWell(
@@ -267,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.grey.shade100,
               spreadRadius: 1,
               blurRadius: 3,
-              offset: const Offset(0, 1), // changes position of shadow
+              offset: const Offset(0, 1),
             ),
           ],
         ),
@@ -280,21 +309,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(8.0),
                 ),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover, // Adjust fit as needed
-                  width: double.infinity,
-                  // Add error and loading builders for better UX
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const Center(child: CircularProgressIndicator());
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Icon(Icons.broken_image, color: Colors.grey),
-                    );
-                  },
-                ),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(Icons.broken_image, color: Colors.grey),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child:
+                            Icon(Icons.image_not_supported, color: Colors.grey),
+                      ),
               ),
             ),
             // Details
@@ -318,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.orange, // Or your price color
+                      color: Colors.orange,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -336,6 +370,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontSize: 12,
                           color: isNew ? Colors.green : Colors.blueGrey,
                         ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Display seller email directly
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.person_outline,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        sellerEmail,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

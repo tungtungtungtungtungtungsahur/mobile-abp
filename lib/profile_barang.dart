@@ -198,7 +198,14 @@ class _ProfileBarangState extends State<ProfileBarang>
   }
 
   Widget _buildBarangTab() {
-    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return const Center(
+        child: Text('Silakan login untuk melihat barang Anda'),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -207,11 +214,11 @@ class _ProfileBarangState extends State<ProfileBarang>
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
-                .where('userId', isEqualTo: currentUserId)
+                .where('userId', isEqualTo: currentUser.uid)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
+                return Text('Error: ${snapshot.error}');
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -232,7 +239,7 @@ class _ProfileBarangState extends State<ProfileBarang>
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
-                .where('userId', isEqualTo: currentUserId)
+                .where('userId', isEqualTo: currentUser.uid)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
@@ -244,6 +251,12 @@ class _ProfileBarangState extends State<ProfileBarang>
               }
 
               final products = snapshot.data?.docs ?? [];
+
+              if (products.isEmpty) {
+                return const Center(
+                  child: Text('Belum ada barang yang dijual'),
+                );
+              }
 
               return GridView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -290,11 +303,8 @@ class _ProfileBarangState extends State<ProfileBarang>
                                   ? Image.network(
                                       (product['images'] as List<dynamic>)[0],
                                       fit: BoxFit.cover,
-                                      errorBuilder: (
-                                        context,
-                                        error,
-                                        stackTrace,
-                                      ) {
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
                                         return const Center(
                                           child: Icon(Icons.error),
                                         );

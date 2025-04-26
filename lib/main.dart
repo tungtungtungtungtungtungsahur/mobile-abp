@@ -23,14 +23,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
     return MaterialApp(
       title: 'Flutter E-commerce UI',
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Or your preferred theme color
+        primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        fontFamily: 'Poppins', // Example: Use a custom font if desired
+        fontFamily: 'Poppins',
       ),
       debugShowCheckedModeBanner: false,
       initialRoute: '/signin',
@@ -41,7 +39,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfilePage(),
         '/firebase_test': (context) => const FirebaseTestPage(),
-        '/profile_barang': (context) => ProfileBarang(),
+        '/profile_barang': (context) => const ProfileBarang(),
       },
     );
   }
