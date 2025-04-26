@@ -3,6 +3,7 @@ import 'package:project_kel_5/home.dart';
 import 'package:project_kel_5/profile.dart';
 import 'package:project_kel_5/signin.dart';
 import 'package:project_kel_5/signup.dart';
+import 'package:project_kel_5/landingMenu.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,8 +22,9 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins', // Example: Use a custom font if desired
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/signin',
+      initialRoute: '/landingMenu',
       routes: {
+        '/landingMenu': (context) => const LandingMenu(),
         '/signin': (context) => const SignInPage(),
         '/signup': (context) => const SignUpPage(),
         '/home': (context) => const HomeScreen(),
