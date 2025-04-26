@@ -252,7 +252,7 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
       appBar: AppBar(
         title: Text('Edit Produk'),
         actions: [
-          IconButton(icon: Icon(Icons.save), onPressed: _updateProduct),
+          IconButton(icon: Icon(Icons.save, size: 32.0), onPressed: _updateProduct),
         ],
       ),
       body: SingleChildScrollView(

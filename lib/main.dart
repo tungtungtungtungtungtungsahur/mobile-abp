@@ -29,12 +29,9 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins', // Example: Use a custom font if desired
       ),
       debugShowCheckedModeBanner: false,
-<<<<<<< Updated upstream
       initialRoute: '/landingMenu',
-=======
-      initialRoute: '/signin',
->>>>>>> Stashed changes
       routes: {
+        '/landingMenu': (context) => const LandingMenu(),
         '/signin': (context) => const SignInPage(),
         '/signup': (context) => const SignUpPage(),
         '/home': (context) => const HomeScreen(),
