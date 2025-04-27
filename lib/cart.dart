@@ -76,7 +76,9 @@ class _CartPageState extends State<CartPage> {
                 return sum + (price * quantity).toInt();
               });
 
-              final selectedTotalPrice = items.where((item) => selectedProductIds.contains(item['id']?.toString() ?? ''))
+              final selectedTotalPrice = items
+                  .where((item) =>
+                      selectedProductIds.contains(item['id']?.toString() ?? ''))
                   .fold<int>(0, (sum, item) {
                 final price = int.tryParse(item['price'].toString()) ?? 0;
                 final quantity = item['quantity'] ?? 1;
@@ -138,9 +140,10 @@ class _CartPageState extends State<CartPage> {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                textStyle:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -197,7 +200,8 @@ class _CartPageState extends State<CartPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(item['name'] ?? '',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   Text('Rp ${item['price']}',
                       style: const TextStyle(fontSize: 15)),
