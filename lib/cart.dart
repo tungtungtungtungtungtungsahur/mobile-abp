@@ -11,6 +11,7 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   bool isEditing = false;
+  Set<String> selectedProductIds = {}; // Track selected products
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +76,13 @@ class _CartPageState extends State<CartPage> {
                 return sum + (price * quantity).toInt();
               });
 
+              final selectedTotalPrice = items.where((item) => selectedProductIds.contains(item['id']?.toString() ?? ''))
+                  .fold<int>(0, (sum, item) {
+                final price = int.tryParse(item['price'].toString()) ?? 0;
+                final quantity = item['quantity'] ?? 1;
+                return sum + (price * quantity).toInt();
+              });
+
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
@@ -95,14 +103,10 @@ class _CartPageState extends State<CartPage> {
                         Text(sellerName,
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16)),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.circle, color: Colors.green, size: 12),
                         const SizedBox(width: 4),
-                        Text('${items.length} item',
-                            style: const TextStyle(color: Colors.grey)),
                         const Spacer(),
                         Text(
-                            'Rp ${totalPrice.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
+                            'Rp ${selectedTotalPrice.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16)),
                       ],
@@ -120,11 +124,38 @@ class _CartPageState extends State<CartPage> {
           );
         },
       ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: selectedProductIds.isNotEmpty
+                  ? () {
+                      // TODO: Replace with your buy/checkout logic
+                      print('Buying products: ${selectedProductIds.toList()}');
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Beli'),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildProductCard(Map<String, dynamic> item, bool isEditing) {
     final quantity = item['quantity'] ?? 1;
+    final productId = item['id']?.toString() ?? '';
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -135,12 +166,24 @@ class _CartPageState extends State<CartPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Checkbox(
+            value: selectedProductIds.contains(productId),
+            onChanged: (checked) {
+              setState(() {
+                if (checked == true) {
+                  selectedProductIds.add(productId);
+                } else {
+                  selectedProductIds.remove(productId);
+                }
+              });
+            },
+          ),
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
               item['imageUrl'] ?? '',
-              width: 120,
-              height: 120,
+              width: 100,
+              height: 100,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.broken_image, size: 60),
@@ -153,13 +196,15 @@ class _CartPageState extends State<CartPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Rp ${item['price']}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 8),
                   Text(item['name'] ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Text('Rp ${item['price']}',
                       style: const TextStyle(fontSize: 15)),
                   const SizedBox(height: 8),
+                  Text('Jumlah: $quantity',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w500, color: Colors.blue)),
                   if (isEditing)
                     Row(
                       children: [

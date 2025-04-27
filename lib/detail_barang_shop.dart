@@ -199,9 +199,10 @@ class DetailBarangShop extends StatelessWidget {
                           productForCart['id'] = product['productId'];
                           productForCart['sellerId'] = product['sellerId'] ?? 'unknown';
                           CartService.addToCart(productForCart);
-                          Navigator.pushReplacement(
+                          Navigator.pushReplacementNamed(
                             context,
-                            MaterialPageRoute(builder: (context) => const CartPage()),
+                            '/home',
+                            arguments: {'selectedIndex': 3},
                           );
                         },
                         style: ElevatedButton.styleFrom(
