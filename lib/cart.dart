@@ -12,7 +12,6 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   bool isEditing = false;
-  Set<String> selectedProductIds = {}; // Track selected products
 
   @override
   Widget build(BuildContext context) {
@@ -75,118 +74,116 @@ class _CartPageState extends State<CartPage> {
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Seller Info
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: sellerAvatar.isNotEmpty
-                              ? NetworkImage(sellerAvatar)
-                              : null,
-                          child: sellerAvatar.isEmpty
-                              ? const Icon(Icons.person)
-                              : null,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(sellerName,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                        const SizedBox(width: 4),
-                        const Spacer(),
-                        TextButton.icon(
-                          onPressed: () {
-                            print('sellerId: '
-                                '[33m$sellerId[0m, sellerName: '
-                                '[33m$sellerName[0m, sellerAvatar: '
-                                '[33m$sellerAvatar[0m');
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatDetailPage(
-                                  receiverId: sellerId,
-                                  name: sellerName,
-                                  avatarUrl: sellerAvatar,
-                                  productInfo: items.first['productInfo'] ?? {},
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Seller Info
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: sellerAvatar.isNotEmpty
+                                ? NetworkImage(sellerAvatar)
+                                : null,
+                            child: sellerAvatar.isEmpty
+                                ? const Icon(Icons.person)
+                                : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(sellerName,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                          const Spacer(),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Product(s)
+                      ...items
+                          .map((item) => _buildProductCard(item, isEditing))
+                          .toList(),
+                      const SizedBox(height: 12),
+                      // Chat and Complete buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatDetailPage(
+                                    receiverId: sellerId,
+                                    name: sellerName,
+                                    avatarUrl: sellerAvatar,
+                                    productInfo:
+                                        items.first['productInfo'] ?? {},
+                                  ),
                                 ),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              textStyle:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                              side: const BorderSide(color: Colors.black),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                            );
-                          },
-                          icon: const Icon(Icons.chat, color: Colors.blue),
-                          label: const Text('Chat',
-                              style: TextStyle(color: Colors.blue)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Product(s)
-                    ...items
-                        .map((item) => _buildProductCard(item, isEditing))
-                        .toList(),
-                    const SizedBox(height: 12),
-                  ],
+                            ),
+                            child: const Text('Chat'),
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton(
+                            onPressed: () {
+                              // TODO: Implement complete order logic
+                              print('Completing order for seller: $sellerId');
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              textStyle:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Complete'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
           );
         },
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: selectedProductIds.isNotEmpty
-                  ? () {
-                      // TODO: Replace with your buy/checkout logic
-                      print('Buying products: ${selectedProductIds.toList()}');
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                textStyle:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Beli'),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
   Widget _buildProductCard(Map<String, dynamic> item, bool isEditing) {
     final quantity = item['quantity'] ?? 1;
-    final productId = item['id']?.toString() ?? '';
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[100],
+        color: Colors.white,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Checkbox(
-            value: selectedProductIds.contains(productId),
-            onChanged: (checked) {
-              setState(() {
-                if (checked == true) {
-                  selectedProductIds.add(productId);
-                } else {
-                  selectedProductIds.remove(productId);
-                }
-              });
-            },
-          ),
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: (item['images'] as List<dynamic>?)?.isNotEmpty == true
