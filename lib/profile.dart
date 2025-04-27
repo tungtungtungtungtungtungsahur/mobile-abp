@@ -201,7 +201,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 },
               ),
-              _buildMenuItem('Pelayanan Pelanggan', Icons.headset_mic),
               _buildMenuItem(
                 'Keluar',
                 Icons.logout,

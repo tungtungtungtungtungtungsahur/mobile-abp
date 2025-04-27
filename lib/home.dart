@@ -8,6 +8,8 @@ import 'chat_list_page.dart';
 import 'cart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'detail_barang_shop.dart';
+import 'services/search_service.dart';
+import 'search_results_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0; // For BottomNavigationBar
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String? _selectedCategory; // Add this for category filtering
+  String _searchQuery = ''; // Add this for search filtering
 
   void _onItemTapped(int index) {
     setState(() {
@@ -116,17 +119,27 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       decoration: BoxDecoration(
-        color: Colors.grey[200], // Light grey background
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12.0),
       ),
-      child: const TextField(
-        decoration: InputDecoration(
+      child: TextField(
+        decoration: const InputDecoration(
           hintText: 'Pencarian',
           hintStyle: TextStyle(color: Colors.grey),
           icon: Icon(Icons.search, color: Colors.grey),
-          border: InputBorder.none, // Remove the default underline
+          border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(vertical: 14.0),
         ),
+        onSubmitted: (query) {
+          if (query.trim().isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SearchResultsPage(query: query),
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -233,7 +246,6 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // More comprehensive null check
         if (!snapshot.hasData ||
             snapshot.data == null ||
             snapshot.data!.docs.isEmpty) {
@@ -242,13 +254,22 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // Filter by category if selected
-        final docs = _selectedCategory == null || _selectedCategory == 'Semua'
+        // First filter by category
+        var docs = _selectedCategory == null || _selectedCategory == 'Semua'
             ? snapshot.data!.docs
             : snapshot.data!.docs.where((doc) {
                 final data = doc.data() as Map<String, dynamic>?;
                 return data != null && data['category'] == _selectedCategory;
               }).toList();
+
+        // Then filter by search query
+        if (_searchQuery.isNotEmpty) {
+          docs = SearchService.filterProducts(
+            docs.cast<QueryDocumentSnapshot<Map<String, dynamic>>>(),
+            _searchQuery,
+          );
+        }
+
         if (docs.isEmpty) {
           return const Center(
             child: Text('produk tidak ditemukan'),
