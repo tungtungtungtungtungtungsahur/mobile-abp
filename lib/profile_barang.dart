@@ -3,6 +3,7 @@ import 'detail_barang_saya.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'editDetailbarangtoko.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'report_seller.dart';
 
 class ProfileBarang extends StatefulWidget {
   final String sellerId;
@@ -154,6 +155,24 @@ class _ProfileBarangState extends State<ProfileBarang>
                             ],
                           ),
                         ),
+                        // Report button
+                        if (FirebaseAuth.instance.currentUser?.uid !=
+                            widget.sellerId)
+                          IconButton(
+                            icon: const Icon(Icons.warning_amber_rounded,
+                                color: Colors.black, size: 32),
+                            tooltip: 'Laporkan Penjual',
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) {
+                                  return _buildReportSheet(context);
+                                },
+                              );
+                            },
+                          ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -423,6 +442,62 @@ class _ProfileBarangState extends State<ProfileBarang>
                   subtitle: Text(data['jamOperasional'] ?? ''),
                 ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReportSheet(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.45,
+      minChildSize: 0.3,
+      maxChildSize: 0.6,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: ListView(
+            controller: scrollController,
+            shrinkWrap: true,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                child: Text(
+                  'Mengapa Kamu Melaporkan Akun Ini?',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
+              const Divider(height: 1, thickness: 1),
+              _buildReportReason(context, 'Penipu Phishing'),
+              _buildReportReason(context, 'Barang yang saya beli'),
+              _buildReportReason(context, 'Barang terlarang'),
+              _buildReportReason(context, 'Salah harga'),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReportReason(BuildContext context, String reason) {
+    return ListTile(
+      title: Text(reason),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {
+        Navigator.pop(context);
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => ReportSellerSheet(
+            sellerId: widget.sellerId,
+            reason: reason,
           ),
         );
       },
