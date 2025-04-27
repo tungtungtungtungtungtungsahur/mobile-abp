@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SearchService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // search product by name
   static Stream<List<Map<String, dynamic>>> searchProducts(String query) {
@@ -31,11 +33,25 @@ class SearchService {
       return products;
     }
 
-    // case insensitive (bisa kapital or not)
+    // Get current user ID
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) {
+      return [];
+    }
+
+    // Convert both query and product names to lowercase for case-insensitive comparison
     final lowercaseQuery = query.toLowerCase().trim();
     
     return products.where((doc) {
-      final name = doc.data()['name']?.toString().toLowerCase() ?? '';
+      final product = doc.data();
+      final sellerId = product['sellerId']?.toString();
+      
+      // Skip if this is the current user's product
+      if (sellerId == currentUserId) {
+        return false;
+      }
+
+      final name = product['name']?.toString().toLowerCase() ?? '';
       
       // split kata2 di search dan product name
       final productWords = name.split(' ');

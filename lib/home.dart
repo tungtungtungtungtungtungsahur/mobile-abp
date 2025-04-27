@@ -231,6 +231,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- StreamBuilder for products ---
   Widget _buildProductsStream() {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      return const Center(
+        child: Text('Silakan login untuk melihat produk'),
+      );
+    }
+
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore.collection('products').snapshots(),
       builder: (context, snapshot) {
@@ -254,20 +261,18 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // First filter by category
-        var docs = _selectedCategory == null || _selectedCategory == 'Semua'
-            ? snapshot.data!.docs
-            : snapshot.data!.docs.where((doc) {
-                final data = doc.data() as Map<String, dynamic>?;
-                return data != null && data['category'] == _selectedCategory;
-              }).toList();
+        // First filter out current user's products
+        var docs = snapshot.data!.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          return data != null && data['sellerId'] != currentUserId;
+        }).toList();
 
-        // Then filter by search query
-        if (_searchQuery.isNotEmpty) {
-          docs = SearchService.filterProducts(
-            docs.cast<QueryDocumentSnapshot<Map<String, dynamic>>>(),
-            _searchQuery,
-          );
+        // Then filter by category if selected
+        if (_selectedCategory != null && _selectedCategory != 'Semua') {
+          docs = docs.where((doc) {
+            final data = doc.data() as Map<String, dynamic>?;
+            return data != null && data['category'] == _selectedCategory;
+          }).toList();
         }
 
         if (docs.isEmpty) {
@@ -325,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: product['style']?.toString() ?? '-',
                     description: product['description']?.toString() ?? '-',
                     color: product['color']?.toString() ?? '-',
-                    sellerId: product['sellerId'] ?? '',
+                    sellerId: sellerId,
                   );
                 }
 
@@ -345,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: product['style']?.toString() ?? '-',
                   description: product['description']?.toString() ?? '-',
                   color: product['color']?.toString() ?? '-',
-                  sellerId: product['sellerId'] ?? '',
+                  sellerId: sellerId,
                 );
               },
             );
