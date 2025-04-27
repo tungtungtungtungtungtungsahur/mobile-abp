@@ -149,17 +149,21 @@ class _HomeScreenState extends State<HomeScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildCategoryItem(Icons.shopping_bag_outlined, 'Shirt'),
+          _buildCategoryItem(Icons.checkroom, 'Fashion'),
           const SizedBox(width: 12),
-          _buildCategoryItem(
-            Icons.accessibility_new,
-            'Pants',
-          ), // Find better icon
+          _buildCategoryItem(Icons.chair, 'Furniture'),
           const SizedBox(width: 12),
-          _buildCategoryItem(Icons.directions_run, 'Shoes'), // Find better icon
+          _buildCategoryItem(Icons.electrical_services, 'Elektronik'),
           const SizedBox(width: 12),
-          _buildCategoryItem(Icons.watch_outlined, 'Watch'),
-          // Add more categories...
+          _buildCategoryItem(Icons.watch, 'Aksesoris'),
+          const SizedBox(width: 12),
+          _buildCategoryItem(Icons.directions_run, 'Sepatu'),
+          const SizedBox(width: 12),
+          _buildCategoryItem(Icons.shopping_bag, 'Tas'),
+          const SizedBox(width: 12),
+          _buildCategoryItem(Icons.brush, 'Kosmetik'),
+          const SizedBox(width: 12),
+          _buildCategoryItem(Icons.home, 'Perabotan'),
         ],
       ),
     );
