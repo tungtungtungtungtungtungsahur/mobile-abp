@@ -24,7 +24,7 @@ class _SellPageState extends State<SellPage> {
   String? _selectedStyle;
   int _charCount = 0;
   final int _maxChars = 500;
-  final int _hashtagCount = 6;
+
   bool _isUploading = false;
 
   // Dummy data untuk dropdown
@@ -500,10 +500,6 @@ class _SellPageState extends State<SellPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Hashtags: $_hashtagCount',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      ),
                       Text(
                         '$_charCount/$_maxChars',
                         style: TextStyle(color: Colors.grey[600], fontSize: 12),
