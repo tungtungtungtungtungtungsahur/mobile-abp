@@ -36,9 +36,12 @@ class CartService {
         await _firestore.collection('users').doc(product['sellerId']).get();
 
     final sellerData = sellerDoc.data() ?? {};
-    final sellerName = sellerData['name'] ?? 'Unknown Seller';
-    final sellerUsername = sellerData['username'] ?? 'unknown';
-    final sellerAvatar = sellerData['avatarUrl'] ?? '';
+    final sellerName =
+        sellerData['name'] ?? product['sellerName'] ?? 'Unknown Seller';
+    final sellerUsername =
+        sellerData['username'] ?? product['sellerUsername'] ?? 'unknown';
+    final sellerAvatar =
+        sellerData['avatarUrl'] ?? product['sellerAvatar'] ?? '';
 
     // Check if item already exists from the same seller
     final existingItem = await cartRef

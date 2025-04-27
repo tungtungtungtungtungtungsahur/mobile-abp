@@ -270,6 +270,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     condition: condition,
                     productId: doc.id,
                     sellerUsername: 'Loading...',
+                    category: product['category']?.toString() ?? '-',
+                    style: product['style']?.toString() ?? '-',
+                    description: product['description']?.toString() ?? '-',
+                    color: product['color']?.toString() ?? '-',
+                    sellerId: product['sellerId'] ?? '',
                   );
                 }
 
@@ -285,6 +290,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   condition: condition,
                   productId: doc.id,
                   sellerUsername: username,
+                  category: product['category']?.toString() ?? '-',
+                  style: product['style']?.toString() ?? '-',
+                  description: product['description']?.toString() ?? '-',
+                  color: product['color']?.toString() ?? '-',
+                  sellerId: product['sellerId'] ?? '',
                 );
               },
             );
@@ -301,6 +311,11 @@ class _HomeScreenState extends State<HomeScreen> {
     required String condition,
     required String productId,
     required String sellerUsername,
+    required String category,
+    required String style,
+    required String description,
+    required String color,
+    required String sellerId,
   }) {
     bool isNew = condition.toLowerCase() == 'new';
     return InkWell(
@@ -317,6 +332,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 'condition': condition,
                 'productId': productId,
                 'sellerUsername': sellerUsername,
+                'category': category,
+                'style': style,
+                'description': description,
+                'color': color,
+                'sellerId': sellerId,
                 // Add more fields if needed
               },
             ),
