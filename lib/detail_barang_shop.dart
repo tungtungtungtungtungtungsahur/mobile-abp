@@ -3,6 +3,7 @@ import 'cart.dart';
 import 'cart_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_detail_page.dart';
+import 'dart:io';
 
 class DetailBarangShop extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -11,7 +12,7 @@ class DetailBarangShop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = product['imageUrl']?.toString() ?? '';
+    final images = product['images'] as List<dynamic>?;
     final name = product['name']?.toString() ?? 'No Name';
     final price = product['price']?.toString() ?? '0';
     final description = product['description']?.toString() ?? '-';
@@ -51,23 +52,102 @@ class DetailBarangShop extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product Image
+                      // Product Image Gallery
                       AspectRatio(
                         aspectRatio: 1,
-                        child: imageUrl.isNotEmpty
-                            ? Image.network(
-                                imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Center(
-                                        child:
-                                            Icon(Icons.broken_image, size: 80)),
+                        child: (images?.length ?? 0) > 0
+                            ? Stack(
+                                children: [
+                                  // Main Image
+                                  images![0].toString().startsWith('http')
+                                      ? Image.network(
+                                          images![0].toString(),
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Center(
+                                                  child:
+                                                      Icon(Icons.broken_image, size: 80)),
+                                        )
+                                      : Image.file(
+                                          File(images![0].toString().replaceAll('file://', '')),
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Center(
+                                                  child:
+                                                      Icon(Icons.broken_image, size: 80)),
+                                        ),
+                                  // Image Gallery Indicator
+                                  if (images.length > 1)
+                                    Positioned(
+                                      bottom: 16,
+                                      left: 0,
+                                      right: 0,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: List.generate(
+                                          images.length,
+                                          (index) => Container(
+                                            width: 8,
+                                            height: 8,
+                                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: index == 0
+                                                  ? Colors.white
+                                                  : Colors.white.withOpacity(0.5),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               )
                             : const Center(
                                 child:
                                     Icon(Icons.image_not_supported, size: 80)),
                       ),
+                      // Image Thumbnails
+                      if ((images?.length ?? 0) > 1)
+                        SizedBox(
+                          height: 80,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: images?.length ?? 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    // TODO: Implement image gallery view
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: images![index].toString().startsWith('http')
+                                        ? Image.network(
+                                            images![index].toString(),
+                                            width: 80,
+                                            height: 80,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                const Icon(Icons.broken_image, size: 40),
+                                          )
+                                        : Image.file(
+                                            File(images![index].toString().replaceAll('file://', '')),
+                                            width: 80,
+                                            height: 80,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                const Icon(Icons.broken_image, size: 40),
+                                          ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -233,7 +313,7 @@ class DetailBarangShop extends StatelessWidget {
                                 productInfo: {
                                   'name': name,
                                   'price': price,
-                                  'imageUrl': imageUrl,
+                                  'images': images,
                                   'description': description,
                                   'condition': condition,
                                   'sellerName': sellerName,
