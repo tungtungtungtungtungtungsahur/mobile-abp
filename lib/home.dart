@@ -326,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(
             builder: (context) => DetailBarangShop(
               product: {
-                'imageUrl': imageUrl,
+                'images': [imageUrl], // Pass as array to match Cloudinary format
                 'name': name,
                 'price': price.replaceAll('Rp. ', ''),
                 'condition': condition,
@@ -337,7 +337,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 'description': description,
                 'color': color,
                 'sellerId': sellerId,
-                // Add more fields if needed
               },
             ),
           ),
