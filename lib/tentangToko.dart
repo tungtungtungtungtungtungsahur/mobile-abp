@@ -252,7 +252,7 @@ class _TentangTokoState extends State<TentangToko> {
           icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Bio Toko', style: TextStyle(color: Colors.black)),
+        title: const Text('Biodata Toko', style: TextStyle(color: Colors.black)),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
