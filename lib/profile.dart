@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'profile_barang.dart';
 import 'ktp.dart';
 import 'tentangToko.dart';
+import 'bantuan.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'pesananSelesai.dart';
-import 'bantuan.dart';
+import 'landingmenu.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -150,18 +151,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 'Katalog Saya',
                 Icons.store,
                 onTap: () {
-                 Navigator.push(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ProfileBarang(),
                     ),
                   );
-                }, 
+                },
               ),
               _buildMenuItem(
                 'Biodata Toko',
-                 Icons.description,
-                 onTap: () {
+                Icons.description,
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -200,7 +201,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
               _buildMenuItem('Pelayanan Pelanggan', Icons.headset_mic),
-              _buildMenuItem('Pengaturan', Icons.settings),
+              _buildMenuItem(
+                'Keluar',
+                Icons.logout,
+                onTap: _showLogoutDialog,
+              ),
             ],
           ),
         ),
@@ -233,12 +238,103 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         child: Row(
           children: [
+            Icon(icon, color: Colors.black),
+            const SizedBox(width: 16),
             Text(title, style: const TextStyle(fontSize: 16)),
             const Spacer(),
             Icon(Icons.chevron_right, color: Colors.grey[400]),
           ],
         ),
       ),
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 60,
+                  color: Colors.redAccent,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Keluar dari Akun?',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Apakah Anda yakin ingin keluar dari akun ini?',
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.grey),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          'Tidak',
+                          style: TextStyle(fontSize: 16, color: Colors.black),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await FirebaseAuth.instance.signOut();
+                          if (mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => const LandingMenu()), 
+                              (route) => false,
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          'Yakin',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
