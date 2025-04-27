@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/landingMenu',
+      initialRoute: FirebaseAuth.instance.currentUser != null ? '/home' : '/landingMenu',
       routes: {
         '/landingMenu': (context) => const LandingMenu(),
         '/signin': (context) => const SignInPage(),
