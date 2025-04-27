@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "560073040051",
-    "project_id": "barbek-9f083",
-    "storage_bucket": "barbek-9f083.firebasestorage.app"
+    "project_number": "706194773055",
+    "project_id": "barbek-f1c69",
+    "storage_bucket": "barbek-f1c69.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:560073040051:android:06e439082bcbb21e5250c6",
+        "mobilesdk_app_id": "1:706194773055:android:0954cee4cda31e19ad948a",
         "android_client_info": {
           "package_name": "com.example.project_kel_5"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDAlmUI9hBXNNGmBC5IM2AfH0HKf6zgwDE"
+          "current_key": "AIzaSyAn5QJQv1n6_hITpcpHwqK2zxbCEkMCS7c"
         }
       ],
       "services": {

@@ -27,10 +27,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -44,39 +41,50 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDAlmUI9hBXNNGmBC5IM2AfH0HKf6zgwDE',
-    appId: '1:560073040051:web:YOUR-WEB-APP-ID',
-    messagingSenderId: '560073040051',
-    projectId: 'barbek-9f083',
-    authDomain: 'barbek-9f083.firebaseapp.com',
-    storageBucket: 'barbek-9f083.firebasestorage.app',
+    apiKey: 'AIzaSyCwycpFAvL0lyqO8WMllMTLVG9ZBWXeb4o',
+    appId: '1:706194773055:web:a95899c526ac68d9ad948a',
+    messagingSenderId: '706194773055',
+    projectId: 'barbek-f1c69',
+    authDomain: 'barbek-f1c69.firebaseapp.com',
+    storageBucket: 'barbek-f1c69.firebasestorage.app',
+    measurementId: 'G-ZWSR19WMYF',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDAlmUI9hBXNNGmBC5IM2AfH0HKf6zgwDE',
-    appId: '1:560073040051:android:06e439082bcbb21e5250c6',
-    messagingSenderId: '560073040051',
-    projectId: 'barbek-9f083',
-    storageBucket: 'barbek-9f083.firebasestorage.app',
+    apiKey: 'AIzaSyAn5QJQv1n6_hITpcpHwqK2zxbCEkMCS7c',
+    appId: '1:706194773055:android:0954cee4cda31e19ad948a',
+    messagingSenderId: '706194773055',
+    projectId: 'barbek-f1c69',
+    storageBucket: 'barbek-f1c69.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBCnKI09M6SAvqLESEHvPiGqXCqD41ZSD0',
-    appId: '1:560073040051:ios:faaa5c2273aeb84e5250c6',
-    messagingSenderId: '560073040051',
-    projectId: 'barbek-9f083',
-    storageBucket: 'barbek-9f083.firebasestorage.app',
-    iosClientId: 'YOUR-IOS-CLIENT-ID',
+    apiKey: 'AIzaSyCSSTJkVs00twhjF2ubh5FmA6fCp2NHdRI',
+    appId: '1:706194773055:ios:3e4d91780f97d938ad948a',
+    messagingSenderId: '706194773055',
+    projectId: 'barbek-f1c69',
+    storageBucket: 'barbek-f1c69.firebasestorage.app',
     iosBundleId: 'com.example.projectKel5',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBCnKI09M6SAvqLESEHvPiGqXCqD41ZSD0',
-    appId: '1:560073040051:ios:faaa5c2273aeb84e5250c6',
-    messagingSenderId: '560073040051',
-    projectId: 'barbek-9f083',
-    storageBucket: 'barbek-9f083.firebasestorage.app',
+    apiKey: 'AIzaSyCSSTJkVs00twhjF2ubh5FmA6fCp2NHdRI',
+    appId: '1:706194773055:ios:3e4d91780f97d938ad948a',
+    messagingSenderId: '706194773055',
+    projectId: 'barbek-f1c69',
+    storageBucket: 'barbek-f1c69.firebasestorage.app',
     iosClientId: 'YOUR-MACOS-CLIENT-ID',
     iosBundleId: 'com.example.projectKel5',
   );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyCwycpFAvL0lyqO8WMllMTLVG9ZBWXeb4o',
+    appId: '1:706194773055:web:fbf46b61a890ac5bad948a',
+    messagingSenderId: '706194773055',
+    projectId: 'barbek-f1c69',
+    authDomain: 'barbek-f1c69.firebaseapp.com',
+    storageBucket: 'barbek-f1c69.firebasestorage.app',
+    measurementId: 'G-62823VQL2Z',
+  );
+
 }
