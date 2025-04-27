@@ -19,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0; // For BottomNavigationBar
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String? _selectedCategory; // Add this for category filtering
 
   void _onItemTapped(int index) {
     setState(() {
@@ -145,42 +146,55 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- Categories ---
   Widget _buildCategories() {
     // Use SingleChildScrollView for horizontal scrolling
+    final categories = [
+      {'icon': Icons.checkroom, 'label': 'Fashion'},
+      {'icon': Icons.chair, 'label': 'Furniture'},
+      {'icon': Icons.electrical_services, 'label': 'Elektronik'},
+      {'icon': Icons.watch, 'label': 'Aksesoris'},
+      {'icon': Icons.directions_run, 'label': 'Sepatu'},
+      {'icon': Icons.shopping_bag, 'label': 'Tas'},
+      {'icon': Icons.brush, 'label': 'Kosmetik'},
+      {'icon': Icons.home, 'label': 'Perabotan'},
+    ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildCategoryItem(Icons.checkroom, 'Fashion'),
+          _buildCategoryItem(Icons.apps, 'Semua'),
           const SizedBox(width: 12),
-          _buildCategoryItem(Icons.chair, 'Furniture'),
-          const SizedBox(width: 12),
-          _buildCategoryItem(Icons.electrical_services, 'Elektronik'),
-          const SizedBox(width: 12),
-          _buildCategoryItem(Icons.watch, 'Aksesoris'),
-          const SizedBox(width: 12),
-          _buildCategoryItem(Icons.directions_run, 'Sepatu'),
-          const SizedBox(width: 12),
-          _buildCategoryItem(Icons.shopping_bag, 'Tas'),
-          const SizedBox(width: 12),
-          _buildCategoryItem(Icons.brush, 'Kosmetik'),
-          const SizedBox(width: 12),
-          _buildCategoryItem(Icons.home, 'Perabotan'),
+          ...categories
+              .map((cat) => Row(children: [
+                    _buildCategoryItem(
+                        cat['icon'] as IconData, cat['label'] as String),
+                    const SizedBox(width: 12),
+                  ]))
+              .toList(),
         ],
       ),
     );
   }
 
   Widget _buildCategoryItem(IconData icon, String label) {
+    final isSelected = _selectedCategory == label ||
+        (_selectedCategory == null && label == 'Semua');
     return InkWell(
       onTap: () {
-        // Handle category tap
-        print('Tapped category: $label');
+        setState(() {
+          if (label == 'Semua') {
+            _selectedCategory = null;
+          } else {
+            _selectedCategory = label;
+          }
+        });
       },
       borderRadius: BorderRadius.circular(8.0),
       child: Container(
         width: 80, // Adjust width as needed
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+          border:
+              Border.all(color: isSelected ? Colors.black : Colors.grey[300]!),
+          color: isSelected ? Colors.grey[200] : Colors.white,
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Column(
@@ -190,7 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 6),
             Text(
               label,
-              style: const TextStyle(fontSize: 12, color: Colors.black87),
+              style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.black87,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
               textAlign: TextAlign.center,
             ),
           ],
@@ -221,14 +238,20 @@ class _HomeScreenState extends State<HomeScreen> {
             snapshot.data == null ||
             snapshot.data!.docs.isEmpty) {
           return const Center(
-            child: Text('No products available'),
+            child: Text('produk tidak ditemukan'),
           );
         }
 
-        final docs = snapshot.data!.docs;
+        // Filter by category if selected
+        final docs = _selectedCategory == null || _selectedCategory == 'Semua'
+            ? snapshot.data!.docs
+            : snapshot.data!.docs.where((doc) {
+                final data = doc.data() as Map<String, dynamic>?;
+                return data != null && data['category'] == _selectedCategory;
+              }).toList();
         if (docs.isEmpty) {
           return const Center(
-            child: Text('No products available'),
+            child: Text('produk tidak ditemukan'),
           );
         }
 
