@@ -65,24 +65,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Home tab content
   Widget _buildHomeContent() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            _buildSearchBar(),
-            const SizedBox(height: 24),
-            _buildSectionTitle('Kategori'),
-            const SizedBox(height: 12),
-            _buildCategories(),
-            const SizedBox(height: 24),
-            _buildSectionTitle('Rekomendasi Untuk anda'),
-            const SizedBox(height: 12),
-            _buildProductsStream(),
-            const SizedBox(height: 20),
-          ],
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              _buildSearchBar(),
+              const SizedBox(height: 24),
+              _buildSectionTitle('Kategori'),
+              const SizedBox(height: 12),
+              _buildCategories(),
+              const SizedBox(height: 24),
+              _buildSectionTitle('Rekomendasi Untuk anda'),
+              const SizedBox(height: 12),
+              _buildProductsStream(),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -253,7 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Safe access to product fields with null checks
             final images = product['images'] as List<dynamic>?;
-            final imageUrl = images?.isNotEmpty == true ? images![0].toString() : '';
+            final imageUrl =
+                images?.isNotEmpty == true ? images![0].toString() : '';
             final name = product['name']?.toString() ?? 'No Name';
             final price = product['price']?.toString() ?? '0';
             final condition = product['condition']?.toString() ?? 'Unknown';
@@ -326,7 +329,9 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(
             builder: (context) => DetailBarangShop(
               product: {
-                'images': [imageUrl], // Pass as array to match Cloudinary format
+                'images': [
+                  imageUrl
+                ], // Pass as array to match Cloudinary format
                 'name': name,
                 'price': price.replaceAll('Rp. ', ''),
                 'condition': condition,
