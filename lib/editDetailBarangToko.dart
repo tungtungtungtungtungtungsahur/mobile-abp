@@ -23,7 +23,8 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  List<File> _selectedImages = [];
+  List<String> _existingImageUrls = [];
+  List<File> _newImages = [];
   String? _selectedCategory;
   String? _selectedCondition;
   String? _selectedStyle;
@@ -67,27 +68,132 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
     _selectedCategory = widget.product['category'];
     _selectedCondition = widget.product['condition'];
     _selectedStyle = widget.product['style'];
+    if (widget.product['images'] != null) {
+      _existingImageUrls = List<String>.from(widget.product['images']);
+    }
   }
 
   Future<void> _pickImage() async {
-    if (_selectedImages.length >= 4) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Maksimal upload 4 foto')));
+    if (_existingImageUrls.length + _newImages.length >= 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Maksimal upload 4 foto')),
+      );
       return;
     }
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
         setState(() {
-          _selectedImages.add(File(image.path));
+          _newImages.add(File(image.path));
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memilih gambar')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar')),
+      );
     }
+  }
+
+  void _removeImage(int index, bool isExisting) {
+    setState(() {
+      if (isExisting) {
+        _existingImageUrls.removeAt(index);
+      } else {
+        _newImages.removeAt(index - _existingImageUrls.length);
+      }
+    });
+  }
+
+  Widget _buildImageGrid() {
+    final totalImages = _existingImageUrls.length + _newImages.length;
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: totalImages < 4 ? totalImages + 1 : totalImages,
+        itemBuilder: (context, index) {
+          if (index < _existingImageUrls.length) {
+            // Gambar lama
+            return Stack(
+              children: [
+                Container(
+                  width: 120,
+                  margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(_existingImageUrls[index]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () => _removeImage(index, true),
+                  ),
+                ),
+              ],
+            );
+          } else if (index < totalImages) {
+            // Gambar baru
+            final newIndex = index - _existingImageUrls.length;
+            return Stack(
+              children: [
+                Container(
+                  width: 120,
+                  margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: FileImage(_newImages[newIndex]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () => _removeImage(index, false),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            // Tombol tambah
+            return GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                width: 120,
+                margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add, color: Colors.black54),
+                    SizedBox(height: 4),
+                    Text(
+                      'Tambah foto',
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        },
+      ),
+    );
   }
 
   void _showCategoryDialog() {
@@ -180,17 +286,14 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
   Future<void> _updateProduct() async {
     if (_validateInputs()) {
       try {
-        // Upload new images to Cloudinary if any
-        List<String> imageUrls = [];
-        if (_selectedImages.isNotEmpty) {
-          for (var imageFile in _selectedImages) {
-            String? imageUrl = await CloudinaryService.uploadImage(imageFile);
-            if (imageUrl != null) {
-              imageUrls.add(imageUrl);
-            }
+        // Upload gambar baru
+        List<String> imageUrls = List.from(_existingImageUrls);
+        for (var imageFile in _newImages) {
+          String? imageUrl = await CloudinaryService.uploadImage(imageFile);
+          if (imageUrl != null) {
+            imageUrls.add(imageUrl);
           }
         }
-
         final productData = {
           'name': _nameController.text,
           'price': int.tryParse(_priceController.text) ?? 0,
@@ -199,18 +302,12 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
           'condition': _selectedCondition,
           'style': _selectedStyle,
           'updatedAt': FieldValue.serverTimestamp(),
+          'images': imageUrls,
         };
-
-        // Only update images if new ones were uploaded
-        if (imageUrls.isNotEmpty) {
-          productData['images'] = imageUrls;
-        }
-
         await FirebaseFirestore.instance
             .collection('products')
             .doc(widget.productId)
             .update(productData);
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Produk berhasil diperbarui')),
         );
@@ -278,46 +375,7 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Photo Grid
-            Container(
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _selectedImages.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        width: 120,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add, color: Colors.black54),
-                            SizedBox(height: 4),
-                            Text(
-                              'Tambah foto',
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  return Container();
-                },
-              ),
-            ),
+            _buildImageGrid(),
             SizedBox(height: 16),
             // Product Name
             TextField(
