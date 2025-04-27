@@ -3,6 +3,7 @@ import 'profile_barang.dart';
 import 'ktp.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'pesananSelesai.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -127,7 +128,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     Container(width: 1, height: 40, color: Colors.grey[300]),
                     _buildStatItem('Dikirim', '0'),
                     Container(width: 1, height: 40, color: Colors.grey[300]),
-                    _buildStatItem('Siap untuk Pickup', '1'),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PesananSelesai(),
+                          ),
+                        );
+                      },
+                      child: _buildStatItem('Selesai', '1'),
+                    ),
                   ],
                 ),
               ),
