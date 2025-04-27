@@ -324,7 +324,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         child: const Text(
                           'Yakin',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ),
