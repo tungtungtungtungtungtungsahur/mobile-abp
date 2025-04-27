@@ -20,7 +20,8 @@ class ChatListPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pesan', style: TextStyle(fontWeight: FontWeight.bold)),
+        title:
+            const Text('Pesan', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -58,7 +59,12 @@ class ChatListPage extends StatelessWidget {
                     final participants = chat['participants'] as List<dynamic>;
                     final otherUserId = participants.firstWhere(
                       (id) => id != currentUser.uid,
+                      orElse: () => '',
                     ) as String;
+                    if (otherUserId.isEmpty) {
+                      // Skip rendering this chat if no other user found
+                      return const SizedBox.shrink();
+                    }
 
                     return FutureBuilder<DocumentSnapshot>(
                       future: FirebaseFirestore.instance
@@ -75,11 +81,14 @@ class ChatListPage extends StatelessWidget {
                           );
                         }
 
-                        final userData = userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                        final userData = userSnapshot.data?.data()
+                                as Map<String, dynamic>? ??
+                            {};
                         final userName = userData['name'] ?? 'Unknown User';
                         final avatarUrl = userData['avatarUrl'] ?? '';
                         final lastMessage = chat['lastMessage'] ?? '';
-                        final lastMessageTime = chat['lastMessageTime'] as Timestamp?;
+                        final lastMessageTime =
+                            chat['lastMessageTime'] as Timestamp?;
                         final unreadCount = chat['unreadCount'] ?? 0;
 
                         return InkWell(
@@ -91,6 +100,8 @@ class ChatListPage extends StatelessWidget {
                                   receiverId: otherUserId,
                                   name: userName,
                                   avatarUrl: avatarUrl,
+                                  productInfo: chat['productInfo']
+                                      as Map<String, dynamic>?,
                                 ),
                               ),
                             );
@@ -105,14 +116,19 @@ class ChatListPage extends StatelessWidget {
                               ),
                             ),
                             child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
                               leading: CircleAvatar(
                                 radius: 25,
-                                backgroundImage: avatarUrl.isNotEmpty
+                                backgroundImage: (avatarUrl.isNotEmpty &&
+                                        avatarUrl.startsWith('http'))
                                     ? NetworkImage(avatarUrl)
                                     : null,
                                 backgroundColor: Colors.grey[300],
-                                child: avatarUrl.isEmpty
-                                    ? const Icon(Icons.person, color: Colors.white)
+                                child: (avatarUrl.isEmpty ||
+                                        !avatarUrl.startsWith('http'))
+                                    ? const Icon(Icons.person,
+                                        color: Colors.white)
                                     : null,
                               ),
                               title: Row(
@@ -136,37 +152,14 @@ class ChatListPage extends StatelessWidget {
                                     ),
                                 ],
                               ),
-                              subtitle: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      lastMessage,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ),
-                                  if (unreadCount > 0)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        unreadCount.toString(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                              subtitle: Text(
+                                lastMessage,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
                           ),
@@ -186,7 +179,16 @@ class ChatListPage extends StatelessWidget {
     final difference = now.difference(messageTime);
 
     if (difference.inDays > 0) {
-      return DateFormat('dd/MM/yy').format(messageTime);
+      final days = [
+        'Minggu',
+        'Senin',
+        'Selasa',
+        'Rabu',
+        'Kamis',
+        'Jumat',
+        'Sabtu'
+      ];
+      return days[messageTime.weekday % 7];
     } else if (difference.inHours > 0) {
       return '${difference.inHours}j';
     } else if (difference.inMinutes > 0) {
@@ -196,28 +198,3 @@ class ChatListPage extends StatelessWidget {
     }
   }
 }
-
-// Dummy Data
-class ChatItem {
-  final String name;
-  final String message;
-  final String time;
-  final int unreadCount;
-  final String avatarUrl;
-
-  ChatItem(
-      this.name, this.message, this.time, this.unreadCount, this.avatarUrl);
-}
-
-List<ChatItem> chatItems = [
-  ChatItem('Karina', 'Minusnya dimana ya kak?', '19:45', 2, '/images/rina.jpg'),
-  ChatItem('Ravi', 'Bisa nego tipis ya kak', '18:41', 0, '/images/ravi.jpg'),
-  ChatItem('Archen', 'Permisi, bisa lihat kondisi realnya kak?', '17:45', 2,
-      '/images/archen.jpg'),
-  ChatItem('Kak Gem', 'kak, jual kata-kata?', '17:20', 0, '/images/gem.png'),
-  ChatItem('Wildan', 'baik kak, sampai bertemu di lokasi ya', '16:31', 0,
-      '/images/wildan.jpg'),
-  ChatItem('Amiera', 'Minusnya apa ya kak?', '12:42', 2, '/images/amiera.jpg'),
-  ChatItem('Denis', 'Kak, bisa dikirim ke lokasi aku ga ya?', '12:03', 0,
-      '/images/don.png'),
-];

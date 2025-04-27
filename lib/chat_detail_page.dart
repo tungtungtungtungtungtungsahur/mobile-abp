@@ -35,18 +35,37 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   Future<void> _getOrCreateChat() async {
     final currentUser = _auth.currentUser;
-    if (currentUser == null) return;
+    if (currentUser == null) {
+      debugPrint('Current user is null in _getOrCreateChat');
+      return;
+    }
 
     // Create a unique chat ID by combining both user IDs and product info
-    final users = [currentUser.uid, widget.receiverId]..sort();
-    final productName = widget.productInfo?['name'] ?? '';
-    _chatId = '${users.join('_')}_${productName.hashCode}';
+    final users = [currentUser.uid, widget.receiverId]
+        .where((id) => id.isNotEmpty)
+        .toList()
+      ..sort();
+    if (users.length < 2) {
+      debugPrint('One or both user IDs are empty: users=$users');
+    }
+    final productName = widget.productInfo?['name']?.toString() ?? '';
+    final productId = widget.productInfo?['id']?.toString() ?? '';
+
+    // Ensure chatId is never empty by using a fallback
+    _chatId = users.isNotEmpty
+        ? '${users.join('_')}_${productId.isNotEmpty ? productId : productName.hashCode}'
+        : DateTime.now().millisecondsSinceEpoch.toString();
+    if (_chatId.isEmpty) {
+      debugPrint(
+          'Chat ID is empty, using fallback. users=$users, productId=$productId, productName=$productName');
+      _chatId = DateTime.now().millisecondsSinceEpoch.toString();
+    }
 
     // Check if chat exists, if not create it
     final chatDoc = await _firestore.collection('chats').doc(_chatId).get();
     if (!chatDoc.exists) {
       await _firestore.collection('chats').doc(_chatId).set({
-        'participants': [currentUser.uid, widget.receiverId],
+        'participants': users,
         'productInfo': widget.productInfo,
         'lastMessage': '',
         'lastMessageTime': FieldValue.serverTimestamp(),
@@ -220,10 +239,12 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     final isRead = message['read'] ?? false;
 
                     // Check if this is the first message of the day
-                    final bool showDate = index == messages.length - 1 || 
+                    final bool showDate = index == messages.length - 1 ||
                         _isDifferentDay(
                           timestamp?.toDate(),
-                          (messages[index + 1].data() as Map<String, dynamic>)['timestamp'] as Timestamp?,
+                          (messages[index + 1].data()
+                                  as Map<String, dynamic>)['timestamp']
+                              as Timestamp?,
                         );
 
                     return Column(
@@ -231,7 +252,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                         if (showDate)
                           Container(
                             margin: const EdgeInsets.symmetric(vertical: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
                               borderRadius: BorderRadius.circular(12),
@@ -245,8 +267,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                             ),
                           ),
                         Align(
-                          alignment:
-                              isMe ? Alignment.centerRight : Alignment.centerLeft,
+                          alignment: isMe
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
                           child: Container(
                             margin: const EdgeInsets.symmetric(
                               vertical: 4,
@@ -261,7 +284,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(
-                              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                              crossAxisAlignment: isMe
+                                  ? CrossAxisAlignment.end
+                                  : CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   message['message'],
@@ -274,11 +299,13 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      timestamp != null 
-                                        ? '${timestamp.toDate().hour.toString().padLeft(2, '0')}:${timestamp.toDate().minute.toString().padLeft(2, '0')}'
-                                        : '',
+                                      timestamp != null
+                                          ? '${timestamp.toDate().hour.toString().padLeft(2, '0')}:${timestamp.toDate().minute.toString().padLeft(2, '0')}'
+                                          : '',
                                       style: TextStyle(
-                                        color: isMe ? Colors.white70 : Colors.black54,
+                                        color: isMe
+                                            ? Colors.white70
+                                            : Colors.black54,
                                         fontSize: 10,
                                       ),
                                     ),
@@ -287,7 +314,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                       Icon(
                                         isRead ? Icons.done_all : Icons.done,
                                         size: 14,
-                                        color: isRead ? Colors.blue[100] : Colors.white70,
+                                        color: isRead
+                                            ? Colors.blue[100]
+                                            : Colors.white70,
                                       ),
                                     ],
                                   ],
@@ -342,25 +371,35 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   bool _isDifferentDay(DateTime? date1, Timestamp? date2) {
     if (date1 == null || date2 == null) return true;
     return date1.year != date2.toDate().year ||
-           date1.month != date2.toDate().month ||
-           date1.day != date2.toDate().day;
+        date1.month != date2.toDate().month ||
+        date1.day != date2.toDate().day;
   }
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(date.year, date.month, date.day);
-    
+
     if (messageDate == today) {
       return 'Hari Ini';
     } else if (messageDate == today.subtract(const Duration(days: 1))) {
       return 'Kemarin';
     } else {
       final months = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember'
       ];
       return '${date.day} ${months[date.month - 1]} ${date.year}';
     }
