@@ -30,23 +30,27 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   void initState() {
     super.initState();
     _getOrCreateChat();
+    _markMessagesAsRead();
   }
 
   Future<void> _getOrCreateChat() async {
     final currentUser = _auth.currentUser;
     if (currentUser == null) return;
 
-    // Create a unique chat ID by combining both user IDs
+    // Create a unique chat ID by combining both user IDs and product info
     final users = [currentUser.uid, widget.receiverId]..sort();
-    _chatId = users.join('_');
+    final productName = widget.productInfo?['name'] ?? '';
+    _chatId = '${users.join('_')}_${productName.hashCode}';
 
     // Check if chat exists, if not create it
     final chatDoc = await _firestore.collection('chats').doc(_chatId).get();
     if (!chatDoc.exists) {
       await _firestore.collection('chats').doc(_chatId).set({
         'participants': [currentUser.uid, widget.receiverId],
+        'productInfo': widget.productInfo,
         'lastMessage': '',
         'lastMessageTime': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
       });
     }
   }
@@ -63,6 +67,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       'message': _messageController.text.trim(),
       'timestamp': FieldValue.serverTimestamp(),
       'read': false,
+      'productInfo': widget.productInfo,
     };
 
     // Add message to messages subcollection
@@ -81,6 +86,23 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     _messageController.clear();
   }
 
+  Future<void> _markMessagesAsRead() async {
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) return;
+
+    final messages = await _firestore
+        .collection('chats')
+        .doc(_chatId)
+        .collection('messages')
+        .where('receiverId', isEqualTo: currentUser.uid)
+        .where('read', isEqualTo: false)
+        .get();
+
+    for (var doc in messages.docs) {
+      await doc.reference.update({'read': true});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = _auth.currentUser;
@@ -93,7 +115,25 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               backgroundImage: NetworkImage(widget.avatarUrl),
             ),
             const SizedBox(width: 8),
-            Text(widget.name),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '@${widget.productInfo?['sellerUsername'] ?? 'unknown'}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
         backgroundColor: Colors.white,
@@ -176,30 +216,87 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     final message =
                         messages[index].data() as Map<String, dynamic>;
                     final isMe = message['senderId'] == currentUser?.uid;
+                    final timestamp = message['timestamp'] as Timestamp?;
+                    final isRead = message['read'] ?? false;
 
-                    return Align(
-                      alignment:
-                          isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 8,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isMe ? Colors.blue : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          message['message'],
-                          style: TextStyle(
-                            color: isMe ? Colors.white : Colors.black,
+                    // Check if this is the first message of the day
+                    final bool showDate = index == messages.length - 1 || 
+                        _isDifferentDay(
+                          timestamp?.toDate(),
+                          (messages[index + 1].data() as Map<String, dynamic>)['timestamp'] as Timestamp?,
+                        );
+
+                    return Column(
+                      children: [
+                        if (showDate)
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _formatDate(timestamp?.toDate()),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                        Align(
+                          alignment:
+                              isMe ? Alignment.centerRight : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              vertical: 4,
+                              horizontal: 8,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isMe ? Colors.blue : Colors.grey[300],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  message['message'],
+                                  style: TextStyle(
+                                    color: isMe ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      timestamp != null 
+                                        ? '${timestamp.toDate().hour.toString().padLeft(2, '0')}:${timestamp.toDate().minute.toString().padLeft(2, '0')}'
+                                        : '',
+                                      style: TextStyle(
+                                        color: isMe ? Colors.white70 : Colors.black54,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                    if (isMe) ...[
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        isRead ? Icons.done_all : Icons.done,
+                                        size: 14,
+                                        color: isRead ? Colors.blue[100] : Colors.white70,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     );
                   },
                 );
@@ -240,6 +337,33 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         ],
       ),
     );
+  }
+
+  bool _isDifferentDay(DateTime? date1, Timestamp? date2) {
+    if (date1 == null || date2 == null) return true;
+    return date1.year != date2.toDate().year ||
+           date1.month != date2.toDate().month ||
+           date1.day != date2.toDate().day;
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(date.year, date.month, date.day);
+    
+    if (messageDate == today) {
+      return 'Hari Ini';
+    } else if (messageDate == today.subtract(const Duration(days: 1))) {
+      return 'Kemarin';
+    } else {
+      final months = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      return '${date.day} ${months[date.month - 1]} ${date.year}';
+    }
   }
 
   @override

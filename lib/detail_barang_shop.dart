@@ -37,6 +37,7 @@ class DetailBarangShop extends StatelessWidget {
         builder: (context, sellerSnapshot) {
           final sellerData = sellerSnapshot.data?.data() as Map<String, dynamic>?;
           final sellerName = sellerData?['name'] ?? 'Unknown Seller';
+          final sellerUsername = sellerData?['username'] ?? 'unknown';
           final sellerAvatar = sellerData?['avatarUrl'] ?? '';
 
           return Column(
@@ -113,7 +114,7 @@ class DetailBarangShop extends StatelessWidget {
                                                   ),
                                                 ),
                                                 Text(
-                                                  '@${sellerData?['username'] ?? 'unknown'}',
+                                                  '@${sellerUsername}',
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color: Colors.grey[600],
@@ -241,6 +242,7 @@ class DetailBarangShop extends StatelessWidget {
                                   'description': description,
                                   'condition': condition,
                                   'sellerName': sellerName,
+                                  'sellerUsername': sellerUsername,
                                 },
                               ),
                             ),
