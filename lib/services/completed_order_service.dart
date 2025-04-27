@@ -5,12 +5,12 @@ class CompletedOrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'completed_orders';
 
-  // Get completed orders for a specific user
+  // Get completed orders for a specific user (without date sorting)
   Stream<List<CompletedOrder>> getCompletedOrders(String userId) {
     return _firestore
         .collection(_collection)
         .where('userId', isEqualTo: userId)
-        .orderBy('completedDate', descending: true)
+        // Removed orderBy to avoid needing an index
         .snapshots()
         .map((snapshot) {
       return snapshot.docs

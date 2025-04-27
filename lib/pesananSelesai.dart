@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'models/completed_order.dart';
+import 'services/completed_order_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PesananSelesai extends StatefulWidget {
   const PesananSelesai({Key? key}) : super(key: key);
@@ -8,51 +11,10 @@ class PesananSelesai extends StatefulWidget {
 }
 
 class _PesananSelesaiState extends State<PesananSelesai> {
-  // Dummy order data
-  final List<Map<String, dynamic>> _orders = [
-    {
-      'store': 'Mall ORI Watsons Indonesia Official',
-      'product': 'Something Nobles Eyeshadow Palette Vol 1',
-      'originalPrice': 'Rp131.000',
-      'discountedPrice': 'Rp96.600',
-      'totalPrice': 'Rp83.312',
-      'imagePath': 'assets/eyeshadow.jpg',
-      'sellerRating': null,
-      'productRating': null,
-    },
-    {
-      'store': 'Serbaaa serbuuu',
-      'product': 'kalkulator DX-837B ATK-14/ Calculator 12 D...',
-      'originalPrice': '',
-      'discountedPrice': 'Rp21.460',
-      'totalPrice': 'Rp23.460',
-      'imagePath': 'assets/calculator.jpg',
-      'sellerRating': null,
-      'productRating': null,
-    },
-    {
-      'store': 'Awicom Label',
-      'product': '10x20 POLYMAILER Plastik Packing ukuran 1...',
-      'originalPrice': 'Rp10.000',
-      'discountedPrice': 'Rp6.160',
-      'totalPrice': 'Rp6.820',
-      'imagePath': 'assets/polymailer.jpg',
-      'sellerRating': null,
-      'productRating': null,
-    },
-    {
-      'store': 'Targetolshop',
-      'product': '1 pack isi 5 roll plastik sampah roll jumbo kant...',
-      'originalPrice': '',
-      'discountedPrice': '',
-      'totalPrice': '',
-      'imagePath': 'assets/trash_bag.jpg',
-      'sellerRating': null,
-      'productRating': null,
-    },
-  ];
+  final CompletedOrderService _orderService = CompletedOrderService();
+  final user = FirebaseAuth.instance.currentUser;
 
-  void _showRatingDialog(BuildContext context, int index) {
+  void _showRatingDialog(BuildContext context, CompletedOrder order) {
     int sellerRating = 0;
     int productRating = 0;
 
@@ -67,7 +29,7 @@ class _PesananSelesaiState extends State<PesananSelesai> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Penilaian untuk Toko: ${_orders[index]['store']}'),
+                  Text('Penilaian untuk Toko: ${order.storeName}'),
                   SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -87,7 +49,7 @@ class _PesananSelesaiState extends State<PesananSelesai> {
                     }),
                   ),
                   SizedBox(height: 16),
-                  Text('Penilaian untuk Produk: ${_orders[index]['product']}'),
+                  Text('Penilaian untuk Produk: ${order.productName}'),
                   SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -110,28 +72,33 @@ class _PesananSelesaiState extends State<PesananSelesai> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: () => Navigator.of(context).pop(),
                   child: Text('Batal'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (sellerRating > 0 && productRating > 0) {
-                      setState(() {
-                        _orders[index]['sellerRating'] = sellerRating;
-                        _orders[index]['productRating'] = productRating;
-                        // Move rated order to the end
-                        final ratedOrder = _orders.removeAt(index);
-                        _orders.add(ratedOrder);
-                      });
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Terima kasih atas penilaian Anda!'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                      try {
+                        await _orderService.submitRatings(
+                          order.id,
+                          sellerRating,
+                          productRating,
+                        );
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Terima kasih atas penilaian Anda!'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Gagal menyimpan penilaian: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
                   },
                   child: Text('Kirim'),
@@ -158,54 +125,58 @@ class _PesananSelesaiState extends State<PesananSelesai> {
           'Selesai',
           style: TextStyle(color: Colors.black),
         ),
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: Icon(Icons.chat_bubble_outline, color: Colors.black),
-                onPressed: () {},
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+      ),
+      body: StreamBuilder<List<CompletedOrder>>(
+        stream: _orderService.getCompletedOrders(user?.uid ?? ''),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Terjadi kesalahan: ${snapshot.error}'),
+            );
+          }
+
+          final orders = snapshot.data ?? [];
+
+          if (orders.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 64,
+                    color: Colors.grey,
                   ),
-                  child: Text(
-                    '34',
+                  SizedBox(height: 16),
+                  Text(
+                    'Belum ada pesanan terselesaikan',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.grey[600],
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Order list
-          Expanded(
-            child: ListView.builder(
-              itemCount: _orders.length,
-              itemBuilder: (context, index) {
-                final order = _orders[index];
-                return _buildOrderItem(context, order, index);
-              },
-            ),
-          ),
-        ],
+            );
+          }
+
+          return ListView.builder(
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              return _buildOrderItem(context, order);
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOrderItem(BuildContext context, Map<String, dynamic> order, int index) {
+  Widget _buildOrderItem(BuildContext context, CompletedOrder order) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Padding(
@@ -217,7 +188,7 @@ class _PesananSelesaiState extends State<PesananSelesai> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  order['store'],
+                  order.storeName,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -236,35 +207,39 @@ class _PesananSelesaiState extends State<PesananSelesai> {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Image.asset(order['imagePath'], fit: BoxFit.cover),
+                  child: Image.network(
+                    order.productImage,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.error_outline);
+                    },
+                  ),
                 ),
                 SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(order['product']),
-                      if (order['originalPrice'].isNotEmpty) ...[
+                      Text(order.productName),
+                      if (order.originalPrice > 0) ...[
                         SizedBox(height: 4),
                         Text(
-                          order['originalPrice'],
+                          'Rp${order.originalPrice.toStringAsFixed(0)}',
                           style: TextStyle(
                             decoration: TextDecoration.lineThrough,
                             color: Colors.grey,
                           ),
                         ),
                       ],
-                      if (order['discountedPrice'].isNotEmpty) ...[
+                      if (order.discountedPrice > 0) ...[
                         SizedBox(height: 4),
                         Text(
-                          order['discountedPrice'],
+                          'Rp${order.discountedPrice.toStringAsFixed(0)}',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
-                      if (order['totalPrice'].isNotEmpty) ...[
-                        SizedBox(height: 8),
-                        Text('Total 1 produk: ${order['totalPrice']}'),
-                      ],
+                      SizedBox(height: 8),
+                      Text('Total: Rp${order.totalPrice.toStringAsFixed(0)}'),
                     ],
                   ),
                 ),
@@ -273,9 +248,9 @@ class _PesananSelesaiState extends State<PesananSelesai> {
             SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
-              child: order['sellerRating'] == null || order['productRating'] == null
+              child: order.sellerRating == null || order.productRating == null
                   ? OutlinedButton(
-                      onPressed: () => _showRatingDialog(context, index),
+                      onPressed: () => _showRatingDialog(context, order),
                       child: Text(
                         'Beri Nilai',
                         style: TextStyle(color: Colors.red),
@@ -291,13 +266,16 @@ class _PesananSelesaiState extends State<PesananSelesai> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(
-                          children: List.generate(5, (i) => Icon(
-                                i < order['productRating']
-                                    ? Icons.star
-                                    : Icons.star_border,
-                                color: Colors.amber,
-                                size: 22,
-                              )),
+                          children: List.generate(
+                            5,
+                            (i) => Icon(
+                              i < (order.productRating ?? 0)
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: Colors.amber,
+                              size: 22,
+                            ),
+                          ),
                         ),
                       ],
                     ),
