@@ -25,6 +25,7 @@ class _SellPageState extends State<SellPage> {
   int _charCount = 0;
   final int _maxChars = 500;
   final int _hashtagCount = 6;
+  bool _isUploading = false;
 
   // Dummy data untuk dropdown
   final List<String> categories = [
@@ -202,6 +203,14 @@ class _SellPageState extends State<SellPage> {
     );
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+  }
+
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -269,9 +278,13 @@ class _SellPageState extends State<SellPage> {
 
   void _handleUpload() async {
     if (_validateInputs()) {
+      setState(() { _isUploading = true; });
+      _showLoadingDialog();
       // Get current user
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+        setState(() { _isUploading = false; });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Anda harus login terlebih dahulu')),
         );
@@ -288,6 +301,8 @@ class _SellPageState extends State<SellPage> {
       }
 
       if (imageUrls.isEmpty) {
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+        setState(() { _isUploading = false; });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Gagal mengupload gambar')),
         );
@@ -311,8 +326,12 @@ class _SellPageState extends State<SellPage> {
         await FirebaseFirestore.instance
             .collection('products')
             .add(productData);
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+        setState(() { _isUploading = false; });
         _showSuccessDialog(context);
       } catch (e) {
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+        setState(() { _isUploading = false; });
         print('Error saving product: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menyimpan produk: $e')),
@@ -333,16 +352,6 @@ class _SellPageState extends State<SellPage> {
           onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
         title: const Text('Jual produk', style: TextStyle(color: Colors.black)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.copy_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.folder_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -556,7 +565,7 @@ class _SellPageState extends State<SellPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('Upload'),
+                child: Text('Submit'),
               ),
             ),
           ],
