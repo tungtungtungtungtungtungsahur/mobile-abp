@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'cart_service.dart';
 import 'chat_detail_page.dart';
+import 'dart:io';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -142,14 +143,25 @@ class _CartPageState extends State<CartPage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              item['imageUrl'] ?? '',
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.broken_image, size: 60),
-            ),
+            child: (item['images'] as List<dynamic>?)?.isNotEmpty == true
+                ? item['images'][0].toString().startsWith('http')
+                    ? Image.network(
+                        item['images'][0].toString(),
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.broken_image, size: 60),
+                      )
+                    : Image.file(
+                        File(item['images'][0].toString().replaceAll('file://', '')),
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.broken_image, size: 60),
+                      )
+                : const Icon(Icons.broken_image, size: 60),
           ),
           const SizedBox(width: 12),
           Expanded(

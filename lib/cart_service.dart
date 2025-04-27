@@ -60,7 +60,7 @@ class CartService {
         'productId': product['id'],
         'name': product['name'],
         'price': product['price'],
-        'imageUrl': product['imageUrl'],
+        'images': product['images'],
         'sellerId': product['sellerId'],
         'sellerUsername': sellerUsername,
         'seller': {
