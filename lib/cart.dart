@@ -119,8 +119,20 @@ class _CartPageState extends State<CartPage> {
                                     receiverId: sellerId,
                                     name: sellerName,
                                     avatarUrl: sellerAvatar,
-                                    productInfo:
-                                        items.first['productInfo'] ?? {},
+                                    productInfo: {
+                                      'id': items.first['productId'] ??
+                                          items.first['id'],
+                                      'name': items.first['name'],
+                                      'price': items.first['price'],
+                                      'images': items.first['images'],
+                                      'description':
+                                          items.first['description'] ?? '',
+                                      'condition':
+                                          items.first['condition'] ?? '',
+                                      'sellerName': sellerName,
+                                      'sellerUsername': sellerUsername,
+                                      'sellerId': sellerId,
+                                    },
                                   ),
                                 ),
                               );
