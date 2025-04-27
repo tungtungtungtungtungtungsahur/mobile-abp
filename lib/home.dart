@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 12),
           _buildCategoryItem(Icons.brush, 'Kosmetik'),
           const SizedBox(width: 12),
-          _buildCategoryItem(Icons.home, 'Perabot rumah'),
+          _buildCategoryItem(Icons.home, 'Perabotan'),
         ],
       ),
     );
