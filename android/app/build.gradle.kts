@@ -24,7 +24,7 @@ android {
         applicationId = "com.example.project_kel_5"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 21 // Updated for ML Kit compatibility
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -37,6 +37,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
 }
 
 flutter {

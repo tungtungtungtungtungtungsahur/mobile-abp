@@ -176,7 +176,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const KtpPage(),
+                      builder: (context) => KtpPage(
+                        userId: FirebaseAuth.instance.currentUser!.uid,
+                        onVerificationComplete: () {
+                          Navigator.pop(context);
+                        },
+                      ),
                     ),
                   );
                 },
