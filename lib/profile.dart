@@ -154,7 +154,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ProfileBarang(),
+                      builder: (context) => ProfileBarang(
+                          sellerId: FirebaseAuth.instance.currentUser!.uid),
                     ),
                   );
                 },
@@ -310,7 +311,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           await FirebaseAuth.instance.signOut();
                           if (mounted) {
                             Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (context) => const LandingMenu()), 
+                              MaterialPageRoute(
+                                  builder: (context) => const LandingMenu()),
                               (route) => false,
                             );
                           }

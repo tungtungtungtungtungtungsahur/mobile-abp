@@ -5,7 +5,8 @@ import 'editDetailbarangtoko.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileBarang extends StatefulWidget {
-  const ProfileBarang({super.key});
+  final String sellerId;
+  const ProfileBarang({super.key, required this.sellerId});
 
   @override
   State<ProfileBarang> createState() => _ProfileBarangState();
@@ -24,11 +25,9 @@ class _ProfileBarangState extends State<ProfileBarang>
   }
 
   Future<Map<String, dynamic>?> _fetchUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
     final doc = await FirebaseFirestore.instance
         .collection('users')
-        .doc(user.uid)
+        .doc(widget.sellerId)
         .get();
     return doc.data();
   }
@@ -222,15 +221,6 @@ class _ProfileBarangState extends State<ProfileBarang>
   }
 
   Widget _buildBarangTab() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    print('Current User ID: ${currentUser?.uid}'); // Debug print
-
-    if (currentUser == null) {
-      return const Center(
-        child: Text('Silakan login untuk melihat barang Anda'),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -239,26 +229,16 @@ class _ProfileBarangState extends State<ProfileBarang>
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
-                .where('sellerId', isEqualTo: currentUser.uid)
+                .where('sellerId', isEqualTo: widget.sellerId)
                 .snapshots(),
             builder: (context, snapshot) {
-              print(
-                  'Snapshot state: ${snapshot.connectionState}'); // Debug print
-              print('Snapshot has data: ${snapshot.hasData}'); // Debug print
-              print('Snapshot error: ${snapshot.error}'); // Debug print
-
               if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
+                return Text('Error: \\${snapshot.error}');
               }
-
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-
               final products = snapshot.data?.docs ?? [];
-              print(
-                  'Number of products found: ${products.length}'); // Debug print
-
               return Text(
                 '${products.length} Barang',
                 style:
@@ -271,25 +251,21 @@ class _ProfileBarangState extends State<ProfileBarang>
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
-                .where('sellerId', isEqualTo: currentUser.uid)
+                .where('sellerId', isEqualTo: widget.sellerId)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(child: Text('Error: \\${snapshot.error}'));
               }
-
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-
               final products = snapshot.data?.docs ?? [];
-
               if (products.isEmpty) {
                 return const Center(
                   child: Text('Belum ada barang yang dijual'),
                 );
               }
-
               return GridView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -303,7 +279,6 @@ class _ProfileBarangState extends State<ProfileBarang>
                   final product =
                       products[index].data() as Map<String, dynamic>;
                   final images = product['images'] as List<dynamic>?;
-
                   return InkWell(
                     onTap: () {
                       final productDoc = snapshot.data?.docs[index];
@@ -373,23 +348,8 @@ class _ProfileBarangState extends State<ProfileBarang>
                                   children: [
                                     IconButton(
                                       icon: const Icon(Icons.edit),
-                                      onPressed: () {
-                                        final productDoc =
-                                            snapshot.data?.docs[index];
-                                        if (productDoc != null) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EditDetailBarangToko(
-                                                productId: productDoc.id,
-                                                product: productDoc.data()
-                                                    as Map<String, dynamic>,
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                      onPressed:
+                                          null, // Disable edit for other sellers
                                     ),
                                   ],
                                 ),
@@ -410,12 +370,11 @@ class _ProfileBarangState extends State<ProfileBarang>
   }
 
   Widget _buildTentangTab() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      return const Center(child: Text('Silakan login untuk melihat informasi toko'));
-    }
     return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('toko').doc(currentUser.uid).get(),
+      future: FirebaseFirestore.instance
+          .collection('toko')
+          .doc(widget.sellerId)
+          .get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -425,7 +384,8 @@ class _ProfileBarangState extends State<ProfileBarang>
         }
         final data = snapshot.data?.data() as Map<String, dynamic>?;
         if (data == null || (data['deskripsi'] ?? '').toString().isEmpty) {
-          return const Center(child: Text('Tidak ada deskripsi terkait toko ini'));
+          return const Center(
+              child: Text('Tidak ada deskripsi terkait toko ini'));
         }
         return Padding(
           padding: const EdgeInsets.all(16.0),
@@ -447,7 +407,8 @@ class _ProfileBarangState extends State<ProfileBarang>
                 ListTile(
                   leading: const Icon(Icons.category),
                   title: const Text('Kategori'),
-                  subtitle: Text((data['kategori'] as List<dynamic>).join(', ')),
+                  subtitle:
+                      Text((data['kategori'] as List<dynamic>).join(', ')),
                 ),
               if ((data['kontak'] ?? '').toString().isNotEmpty)
                 ListTile(

@@ -4,6 +4,7 @@ import 'cart_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_detail_page.dart';
 import 'dart:io';
+import 'profile_barang.dart';
 
 class DetailBarangShop extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -64,19 +65,25 @@ class DetailBarangShop extends StatelessWidget {
                                           images![0].toString(),
                                           fit: BoxFit.cover,
                                           width: double.infinity,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Center(
-                                                  child:
-                                                      Icon(Icons.broken_image, size: 80)),
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Center(
+                                                      child: Icon(
+                                                          Icons.broken_image,
+                                                          size: 80)),
                                         )
                                       : Image.file(
-                                          File(images![0].toString().replaceAll('file://', '')),
+                                          File(images![0]
+                                              .toString()
+                                              .replaceAll('file://', '')),
                                           fit: BoxFit.cover,
                                           width: double.infinity,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Center(
-                                                  child:
-                                                      Icon(Icons.broken_image, size: 80)),
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Center(
+                                                      child: Icon(
+                                                          Icons.broken_image,
+                                                          size: 80)),
                                         ),
                                   // Image Gallery Indicator
                                   if (images.length > 1)
@@ -85,18 +92,21 @@ class DetailBarangShop extends StatelessWidget {
                                       left: 0,
                                       right: 0,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: List.generate(
                                           images.length,
                                           (index) => Container(
                                             width: 8,
                                             height: 8,
-                                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 4),
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: index == 0
                                                   ? Colors.white
-                                                  : Colors.white.withOpacity(0.5),
+                                                  : Colors.white
+                                                      .withOpacity(0.5),
                                             ),
                                           ),
                                         ),
@@ -115,7 +125,8 @@ class DetailBarangShop extends StatelessWidget {
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: images?.length ?? 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: const EdgeInsets.only(right: 8),
@@ -125,22 +136,30 @@ class DetailBarangShop extends StatelessWidget {
                                   },
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: images![index].toString().startsWith('http')
+                                    child: images![index]
+                                            .toString()
+                                            .startsWith('http')
                                         ? Image.network(
                                             images![index].toString(),
                                             width: 80,
                                             height: 80,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                const Icon(Icons.broken_image, size: 40),
+                                            errorBuilder: (context, error,
+                                                    stackTrace) =>
+                                                const Icon(Icons.broken_image,
+                                                    size: 40),
                                           )
                                         : Image.file(
-                                            File(images![index].toString().replaceAll('file://', '')),
+                                            File(images![index]
+                                                .toString()
+                                                .replaceAll('file://', '')),
                                             width: 80,
                                             height: 80,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                const Icon(Icons.broken_image, size: 40),
+                                            errorBuilder: (context, error,
+                                                    stackTrace) =>
+                                                const Icon(Icons.broken_image,
+                                                    size: 40),
                                           ),
                                   ),
                                 ),
@@ -154,47 +173,59 @@ class DetailBarangShop extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Seller Profile Box
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 22,
-                                    backgroundImage: sellerAvatar.isNotEmpty
-                                        ? NetworkImage(sellerAvatar)
-                                        : null,
-                                    backgroundColor: Colors.grey[300],
-                                    child: sellerAvatar.isEmpty
-                                        ? const Icon(Icons.person)
-                                        : null,
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ProfileBarang(sellerId: sellerId),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        sellerName,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 22,
+                                      backgroundImage: sellerAvatar.isNotEmpty
+                                          ? NetworkImage(sellerAvatar)
+                                          : null,
+                                      backgroundColor: Colors.grey[300],
+                                      child: sellerAvatar.isEmpty
+                                          ? const Icon(Icons.person)
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          sellerName,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        '@$sellerUsername',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.grey[600],
+                                        Text(
+                                          '@$sellerUsername',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             Text(
