@@ -12,7 +12,8 @@ class CustomBottomNavigationBar extends StatefulWidget {
   });
 
   @override
-  State<CustomBottomNavigationBar> createState() => _CustomBottomNavigationBarState();
+  State<CustomBottomNavigationBar> createState() =>
+      _CustomBottomNavigationBarState();
 }
 
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
@@ -37,33 +38,33 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
     return BottomNavigationBar(
       items: <BottomNavigationBarItem>[
         const BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
+          icon: const Icon(Icons.home_outlined),
+          activeIcon: const Icon(Icons.home),
           label: 'Beranda',
         ),
-        BottomNavigationBarItem(
-          icon: _buildIconWithBadge(Icons.chat_bubble_outline, 3),
-          activeIcon: _buildIconWithBadge(Icons.chat_bubble_outline, 3),
+        const BottomNavigationBarItem(
+          icon: const Icon(Icons.chat_bubble_outline),
+          activeIcon: const Icon(Icons.chat_bubble_outline),
           label: 'Pesan',
         ),
         const BottomNavigationBarItem(
-          icon: Icon(Icons.attach_money_outlined),
-          activeIcon: Icon(Icons.attach_money),
+          icon: const Icon(Icons.attach_money_outlined),
+          activeIcon: const Icon(Icons.attach_money),
           label: 'Jual',
         ),
-        BottomNavigationBarItem(
-          icon: _buildIconWithBadge(Icons.shopping_cart_outlined, _cartCount),
-          activeIcon: _buildIconWithBadge(Icons.shopping_cart, _cartCount),
+        const BottomNavigationBarItem(
+          icon: const Icon(Icons.shopping_cart_outlined),
+          activeIcon: const Icon(Icons.shopping_cart),
           label: 'Keranjang',
         ),
         const BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
+          icon: const Icon(Icons.person_outline),
+          activeIcon: const Icon(Icons.person),
           label: 'Akun',
         ),
       ],
       currentIndex: widget.selectedIndex,
-      selectedItemColor: Colors.deepOrange,
+      selectedItemColor: Colors.black,
       unselectedItemColor: Colors.grey[600],
       onTap: widget.onItemTapped,
       type: BottomNavigationBarType.fixed,
