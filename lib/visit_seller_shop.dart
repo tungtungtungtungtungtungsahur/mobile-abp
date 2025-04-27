@@ -369,31 +369,67 @@ class _VisitSellerShopState extends State<VisitSellerShop>
           return Center(child: Text('Error: ${snapshot.error}'));
         }
         final data = snapshot.data?.data() as Map<String, dynamic>?;
-        if (data == null || (data['deskripsi'] ?? '').toString().isEmpty) {
-          return const Center(
-              child: Text('Tidak ada deskripsi terkait toko ini'));
-        }
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Tentang Toko',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              _buildInfoRow(
+                  Icons.description, 'Deskripsi', data?['deskripsi'] ?? '-'),
+              const SizedBox(height: 20),
+              _buildInfoRow(
+                  Icons.location_on, 'Lokasi', data?['lokasi'] ?? '-'),
+              const SizedBox(height: 20),
+              _buildInfoRow(
+                Icons.category,
+                'Kategori',
+                (data?['kategori'] is List)
+                    ? (data?['kategori'] as List).join(', ')
+                    : (data?['kategori'] ?? '-'),
               ),
-              const SizedBox(height: 16),
-              Text(
-                data['deskripsi'] ?? '',
-                style: const TextStyle(fontSize: 16),
-              ),
+              const SizedBox(height: 20),
+              _buildInfoRow(Icons.phone, 'Kontak', data?['kontak'] ?? '-'),
+              const SizedBox(height: 20),
+              _buildInfoRow(Icons.access_time, 'Jam Operasional',
+                  data?['jamOperasional'] ?? '-'),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: Colors.grey[700]),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  fontSize: 15,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
