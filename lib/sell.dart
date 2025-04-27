@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile_barang.dart'; // Make sure this import is correct
-import 'services/cloudinary_service.dart';
+import 'services/firebase_storage_service.dart';
 
 class SellPage extends StatefulWidget {
   const SellPage({super.key});
@@ -291,14 +291,8 @@ class _SellPageState extends State<SellPage> {
         return;
       }
 
-      // Upload images to Cloudinary
-      List<String> imageUrls = [];
-      for (var imageFile in _selectedImages) {
-        String? imageUrl = await CloudinaryService.uploadImage(imageFile);
-        if (imageUrl != null) {
-          imageUrls.add(imageUrl);
-        }
-      }
+      // Upload images to Firebase Storage
+      List<String> imageUrls = await FirebaseStorageService.uploadMultipleImages(_selectedImages);
 
       if (imageUrls.isEmpty) {
         if (mounted) Navigator.of(context, rootNavigator: true).pop();

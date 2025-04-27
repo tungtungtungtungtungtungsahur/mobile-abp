@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'services/cloudinary_service.dart';
+import 'services/firebase_storage_service.dart';
 
 class EditDetailBarangToko extends StatefulWidget {
   final String productId;
@@ -283,17 +283,14 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
     );
   }
 
-  Future<void> _updateProduct() async {
+  Future<void> _handleSave() async {
     if (_validateInputs()) {
       try {
         // Upload gambar baru
         List<String> imageUrls = List.from(_existingImageUrls);
-        for (var imageFile in _newImages) {
-          String? imageUrl = await CloudinaryService.uploadImage(imageFile);
-          if (imageUrl != null) {
-            imageUrls.add(imageUrl);
-          }
-        }
+        List<String> newImageUrls = await FirebaseStorageService.uploadMultipleImages(_newImages);
+        imageUrls.addAll(newImageUrls);
+        
         final productData = {
           'name': _nameController.text,
           'price': int.tryParse(_priceController.text) ?? 0,
@@ -366,7 +363,7 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
       appBar: AppBar(
         title: Text('Edit Produk'),
         actions: [
-          IconButton(icon: Icon(Icons.save, size: 32.0), onPressed: _updateProduct),
+          IconButton(icon: Icon(Icons.save, size: 32.0), onPressed: _handleSave),
         ],
       ),
       body: SingleChildScrollView(
