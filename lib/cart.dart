@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'pesananSelesai.dart';
-import 'pesananDiproses.dart';
 import 'cart_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'chat_detail_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -115,24 +113,6 @@ class _CartPageState extends State<CartPage> {
                         .map((item) => _buildProductCard(item, isEditing))
                         .toList(),
                     const SizedBox(height: 12),
-                    // Beli sekarang button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('Chat',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18)),
-                      ),
-                    ),
                   ],
                 ),
               );

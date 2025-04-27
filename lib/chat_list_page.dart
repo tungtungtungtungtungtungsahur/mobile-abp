@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'chat_detail_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class ChatListPage extends StatelessWidget {
   const ChatListPage({super.key});
@@ -19,8 +20,7 @@ class ChatListPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text('Chats', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Pesan', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -44,112 +44,155 @@ class ChatListPage extends StatelessWidget {
 
           final chats = snapshot.data?.docs ?? [];
 
-          return Column(
-            children: [
-              Expanded(
-                child: chats.isEmpty
-                    ? const Center(child: Text('no message'))
-                    : ListView.builder(
-                        itemCount: chats.length,
-                        itemBuilder: (context, index) {
-                          final chat =
-                              chats[index].data() as Map<String, dynamic>;
-                          final participants =
-                              chat['participants'] as List<dynamic>;
-                          final otherUserId = participants.firstWhere(
-                            (id) => id != currentUser.uid,
-                          ) as String;
+          return chats.isEmpty
+              ? const Center(
+                  child: Text(
+                    'Belum ada pesan',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    final chat = chats[index].data() as Map<String, dynamic>;
+                    final participants = chat['participants'] as List<dynamic>;
+                    final otherUserId = participants.firstWhere(
+                      (id) => id != currentUser.uid,
+                    ) as String;
 
-                          return FutureBuilder<DocumentSnapshot>(
-                            future: FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(otherUserId)
-                                .get(),
-                            builder: (context, userSnapshot) {
-                              if (!userSnapshot.hasData) {
-                                return const ListTile(
-                                  leading: CircleAvatar(
-                                    child: Icon(Icons.person),
+                    return FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(otherUserId)
+                          .get(),
+                      builder: (context, userSnapshot) {
+                        if (!userSnapshot.hasData) {
+                          return const ListTile(
+                            leading: CircleAvatar(
+                              child: Icon(Icons.person),
+                            ),
+                            title: Text('Loading...'),
+                          );
+                        }
+
+                        final userData = userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                        final userName = userData['name'] ?? 'Unknown User';
+                        final avatarUrl = userData['avatarUrl'] ?? '';
+                        final lastMessage = chat['lastMessage'] ?? '';
+                        final lastMessageTime = chat['lastMessageTime'] as Timestamp?;
+                        final unreadCount = chat['unreadCount'] ?? 0;
+
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatDetailPage(
+                                  receiverId: otherUserId,
+                                  name: userName,
+                                  avatarUrl: avatarUrl,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey[200]!,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                radius: 25,
+                                backgroundImage: avatarUrl.isNotEmpty
+                                    ? NetworkImage(avatarUrl)
+                                    : null,
+                                backgroundColor: Colors.grey[300],
+                                child: avatarUrl.isEmpty
+                                    ? const Icon(Icons.person, color: Colors.white)
+                                    : null,
+                              ),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      userName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                                   ),
-                                  title: Text('Loading...'),
-                                );
-                              }
-
-                              final userData = userSnapshot.data?.data()
-                                      as Map<String, dynamic>? ??
-                                  {};
-                              final userName =
-                                  userData['name'] ?? 'Unknown User';
-                              final avatarUrl = userData['avatarUrl'] ?? '';
-
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(avatarUrl),
-                                  backgroundColor: Colors.grey[300],
-                                ),
-                                title: Text(
-                                  userName,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text(
-                                  chat['lastMessage'] ?? '',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
+                                  if (lastMessageTime != null)
                                     Text(
-                                      _formatTimestamp(chat['lastMessageTime']),
+                                      _formatTimestamp(lastMessageTime),
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey[600],
                                       ),
                                     ),
-                                  ],
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ChatDetailPage(
-                                        receiverId: otherUserId,
-                                        name: userName,
-                                        avatarUrl: avatarUrl,
+                                ],
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      lastMessage,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
                                       ),
                                     ),
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-              ),
-            ],
-          );
+                                  ),
+                                  if (unreadCount > 0)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        unreadCount.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
         },
       ),
     );
   }
 
-  String _formatTimestamp(dynamic timestamp) {
-    if (timestamp == null) return '';
-
-    final date = timestamp.toDate();
+  String _formatTimestamp(Timestamp timestamp) {
     final now = DateTime.now();
-    final difference = now.difference(date);
+    final messageTime = timestamp.toDate();
+    final difference = now.difference(messageTime);
 
     if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
+      return DateFormat('dd/MM/yy').format(messageTime);
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
+      return '${difference.inHours}j';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
+      return '${difference.inMinutes}m';
     } else {
-      return 'Just now';
+      return 'Baru saja';
     }
   }
 }
