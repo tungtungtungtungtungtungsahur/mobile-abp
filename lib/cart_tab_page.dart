@@ -20,7 +20,7 @@ class CartTabPage extends StatelessWidget {
             unselectedLabelColor: Colors.grey,
             indicatorColor: Colors.black,
             tabs: [
-              Tab(text: 'Keranjang'),
+              Tab(text: 'Proses'),
               Tab(text: 'Selesai'),
             ],
           ),
