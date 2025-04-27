@@ -15,7 +15,7 @@ class _TentangTokoState extends State<TentangToko> {
   final _lokasiController = TextEditingController();
   final _kontakController = TextEditingController();
   final _jamOperasionalController = TextEditingController();
-  
+
   final List<String> _categories = [
     'Fashion',
     'Furniture',
@@ -26,7 +26,7 @@ class _TentangTokoState extends State<TentangToko> {
     'Kosmetik',
     'Perlengkapan Rumah',
   ];
-  
+
   final List<String> _selectedCategories = [];
   final List<String> _tempSelectedCategories = [];
   bool _isLoading = true;
@@ -40,7 +40,8 @@ class _TentangTokoState extends State<TentangToko> {
   Future<void> _loadExistingData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-    final doc = await FirebaseFirestore.instance.collection('toko').doc(user.uid).get();
+    final doc =
+        await FirebaseFirestore.instance.collection('toko').doc(user.uid).get();
     if (doc.exists) {
       final data = doc.data()!;
       _deskripsiController.text = data['deskripsi'] ?? '';
@@ -61,7 +62,10 @@ class _TentangTokoState extends State<TentangToko> {
   Future<String?> _getUsername() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return null;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
     return doc.data()?['username'] as String?;
   }
 
@@ -85,46 +89,44 @@ class _TentangTokoState extends State<TentangToko> {
   void _showCategoryBottomSheet() {
     _tempSelectedCategories.clear();
     _tempSelectedCategories.addAll(_selectedCategories);
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
+        return StatefulBuilder(builder: (context, setModalState) {
+          return SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Pilih Kategori', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text('Pilih Kategori',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 12),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: _categories.map((category) {
-                          final isSelected = _tempSelectedCategories.contains(category);
-                          return CheckboxListTile(
-                            value: isSelected,
-                            title: Text(category),
-                            activeColor: Colors.grey[700],
-                            onChanged: (checked) {
-                              setModalState(() {
-                                if (checked == true) {
-                                  _tempSelectedCategories.add(category);
-                                } else {
-                                  _tempSelectedCategories.remove(category);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: _categories.map((category) {
+                      final isSelected =
+                          _tempSelectedCategories.contains(category);
+                      return CheckboxListTile(
+                        value: isSelected,
+                        title: Text(category),
+                        activeColor: Colors.grey[700],
+                        onChanged: (checked) {
+                          setModalState(() {
+                            if (checked == true) {
+                              _tempSelectedCategories.add(category);
+                            } else {
+                              _tempSelectedCategories.remove(category);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 8),
                   Align(
@@ -149,9 +151,9 @@ class _TentangTokoState extends State<TentangToko> {
                   ),
                 ],
               ),
-            );
-          }
-        );
+            ),
+          );
+        });
       },
     );
   }
@@ -189,7 +191,8 @@ class _TentangTokoState extends State<TentangToko> {
   }
 
   void _showJamOperasionalDialog() {
-    final controller = TextEditingController(text: _jamOperasionalController.text);
+    final controller =
+        TextEditingController(text: _jamOperasionalController.text);
     showDialog(
       context: context,
       builder: (context) {
@@ -197,7 +200,8 @@ class _TentangTokoState extends State<TentangToko> {
           title: const Text('Jam Operasional'),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(hintText: 'Contoh: Senin-Minggu, 08:00-21:00'),
+            decoration: const InputDecoration(
+                hintText: 'Contoh: Senin-Minggu, 08:00-21:00'),
             autofocus: true,
           ),
           actions: [
@@ -273,7 +277,8 @@ class _TentangTokoState extends State<TentangToko> {
           icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Biodata Toko', style: TextStyle(color: Colors.black)),
+        title:
+            const Text('Biodata Toko', style: TextStyle(color: Colors.black)),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -289,7 +294,9 @@ class _TentangTokoState extends State<TentangToko> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Deskripsi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const Text('Deskripsi',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _deskripsiController,
@@ -299,20 +306,24 @@ class _TentangTokoState extends State<TentangToko> {
                               filled: true,
                               fillColor: Colors.grey[100],
                               hintText: 'Deskripsi toko',
-                              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                              hintStyle: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide:
+                                    BorderSide(color: Colors.grey[300]!),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide:
+                                    BorderSide(color: Colors.grey[300]!),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(color: Colors.black),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -327,14 +338,19 @@ class _TentangTokoState extends State<TentangToko> {
                     const SizedBox(height: 32),
                     // ListTile-style for Lokasi
                     ListTile(
-                      title: const Text('Lokasi', style: TextStyle(fontSize: 16)),
+                      title:
+                          const Text('Lokasi', style: TextStyle(fontSize: 16)),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _lokasiController.text.isEmpty ? 'Pilih lokasi' : _lokasiController.text,
+                            _lokasiController.text.isEmpty
+                                ? 'Pilih lokasi'
+                                : _lokasiController.text,
                             style: TextStyle(
-                              color: _lokasiController.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                              color: _lokasiController.text.isEmpty
+                                  ? Colors.grey[400]
+                                  : Colors.black87,
                               fontSize: 15,
                             ),
                           ),
@@ -347,45 +363,62 @@ class _TentangTokoState extends State<TentangToko> {
                     const SizedBox(height: 32),
                     // ListTile-style for Kategori
                     ListTile(
-                      title: const Text('Kategori', style: TextStyle(fontSize: 16)),
+                      title: const Text('Kategori',
+                          style: TextStyle(fontSize: 16)),
                       subtitle: _selectedCategories.isEmpty
-                          ? Text('Pilih kategori', style: TextStyle(color: Colors.grey[400], fontSize: 15))
+                          ? Text('Pilih kategori',
+                              style: TextStyle(
+                                  color: Colors.grey[400], fontSize: 15))
                           : Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
-                                  children: _selectedCategories.map((category) => Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Chip(
-                                      label: Text(
-                                        category,
-                                        style: const TextStyle(color: Colors.white, fontSize: 12),
-                                      ),
-                                      backgroundColor: Colors.grey[700],
-                                      visualDensity: VisualDensity.compact,
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                  )).toList(),
+                                  children: _selectedCategories
+                                      .map((category) => Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 8.0),
+                                            child: Chip(
+                                              label: Text(
+                                                category,
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12),
+                                              ),
+                                              backgroundColor: Colors.grey[700],
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              padding: EdgeInsets.zero,
+                                            ),
+                                          ))
+                                      .toList(),
                                 ),
                               ),
                             ),
-                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                      trailing:
+                          const Icon(Icons.chevron_right, color: Colors.grey),
                       onTap: _showCategoryBottomSheet,
                     ),
                     const Divider(height: 1),
                     const SizedBox(height: 32),
                     // ListTile-style for Jam Operasional
                     ListTile(
-                      title: const Text('Jam Operasional', style: TextStyle(fontSize: 16)),
+                      title: const Text('Jam Operasional',
+                          style: TextStyle(fontSize: 16)),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _jamOperasionalController.text.isEmpty ? 'Pilih jam' : _jamOperasionalController.text,
+                            _jamOperasionalController.text.isEmpty
+                                ? 'Pilih jam'
+                                : _jamOperasionalController.text,
                             style: TextStyle(
-                              color: _jamOperasionalController.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                              color: _jamOperasionalController.text.isEmpty
+                                  ? Colors.grey[400]
+                                  : Colors.black87,
                               fontSize: 15,
                             ),
                           ),
@@ -398,14 +431,19 @@ class _TentangTokoState extends State<TentangToko> {
                     const SizedBox(height: 32),
                     // ListTile-style for Kontak
                     ListTile(
-                      title: const Text('Kontak', style: TextStyle(fontSize: 16)),
+                      title:
+                          const Text('Kontak', style: TextStyle(fontSize: 16)),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _kontakController.text.isEmpty ? 'Pilih kontak' : _kontakController.text,
+                            _kontakController.text.isEmpty
+                                ? 'Pilih kontak'
+                                : _kontakController.text,
                             style: TextStyle(
-                              color: _kontakController.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                              color: _kontakController.text.isEmpty
+                                  ? Colors.grey[400]
+                                  : Colors.black87,
                               fontSize: 15,
                             ),
                           ),
@@ -429,21 +467,28 @@ class _TentangTokoState extends State<TentangToko> {
                               await _saveData();
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Data toko berhasil disimpan')),
+                                  const SnackBar(
+                                      content:
+                                          Text('Data toko berhasil disimpan')),
                                 );
                                 Navigator.pop(context);
                               }
                             } else if (_selectedCategories.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Pilih minimal satu kategori')),
+                                const SnackBar(
+                                    content:
+                                        Text('Pilih minimal satu kategori')),
                               );
                             } else if (_lokasiController.text.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Lokasi toko harus diisi')),
+                                const SnackBar(
+                                    content: Text('Lokasi toko harus diisi')),
                               );
                             } else if (_jamOperasionalController.text.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Jam operasional harus diisi')),
+                                const SnackBar(
+                                    content:
+                                        Text('Jam operasional harus diisi')),
                               );
                             }
                           },
