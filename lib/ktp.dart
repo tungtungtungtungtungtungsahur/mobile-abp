@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'services/auth_service.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class KtpPage extends StatefulWidget {
-  const KtpPage({super.key});
+  final String userId;
+  final VoidCallback onVerificationComplete;
+  
+  const KtpPage({
+    super.key,
+    required this.userId,
+    required this.onVerificationComplete,
+  });
 
   @override
   _KtpPageState createState() => _KtpPageState();
@@ -13,6 +22,55 @@ class _KtpPageState extends State<KtpPage> {
   File? _ktpImage;
   bool _isLoading = false;
   bool _isSubmitted = false;
+  final _authService = AuthService();
+  final _textRecognizer = TextRecognizer();
+
+  @override
+  void dispose() {
+    _textRecognizer.close();
+    super.dispose();
+  }
+
+  Future<bool> _isValidKtp(File image) async {
+    try {
+      final inputImage = InputImage.fromFile(image);
+      final recognizedText = await _textRecognizer.processImage(inputImage);
+      
+      // Convert text to lowercase for case-insensitive matching
+      final text = recognizedText.text.toLowerCase();
+      
+      // Check for common KTP text patterns
+      final ktpKeywords = [
+        'nik',
+        'nama',
+        'tempat/tgl lahir',
+        'jenis kelamin',
+        'alamat',
+        'rt/rw',
+        'kel/desa',
+        'kecamatan',
+        'agama',
+        'status perkawinan',
+        'pekerjaan',
+        'kewarganegaraan',
+        'berlaku hingga'
+      ];
+
+      // Count how many KTP keywords are found
+      int matches = 0;
+      for (final keyword in ktpKeywords) {
+        if (text.contains(keyword.toLowerCase())) {
+          matches++;
+        }
+      }
+
+      // Consider it a valid KTP if at least 5 keywords are found
+      return matches >= 5;
+    } catch (e) {
+      print('Error in KTP validation: $e');
+      return false;
+    }
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -41,13 +99,32 @@ class _KtpPageState extends State<KtpPage> {
     });
 
     try {
-      // Simulasi proses upload
-      await Future.delayed(const Duration(seconds: 1));
+      // Validate if the image is actually a KTP
+      final isValid = await _isValidKtp(_ktpImage!);
+      
+      if (!isValid) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Gambar yang diunggah bukan KTP yang valid'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      // Update KTP verification status in Firestore
+      await _authService.updateKtpVerification(widget.userId, true);
 
       if (mounted) {
         setState(() {
           _isSubmitted = true;
         });
+        widget.onVerificationComplete();
       }
     } catch (e) {
       if (mounted) {

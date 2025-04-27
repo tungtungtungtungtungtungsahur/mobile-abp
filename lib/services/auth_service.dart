@@ -25,6 +25,7 @@ class AuthService {
         'username': username,
         'email': email,
         'createdAt': FieldValue.serverTimestamp(),
+        'ktpVerified': false,
       });
 
       return userCredential;
@@ -72,4 +73,16 @@ class AuthService {
 
   // Stream of auth changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  // Update KTP verification status
+  Future<void> updateKtpVerification(String userId, bool isVerified) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'ktpVerified': isVerified,
+        'ktpVerifiedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw 'Failed to update KTP verification status';
+    }
+  }
 } 

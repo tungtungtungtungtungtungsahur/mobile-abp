@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'cart_service.dart';
 import 'chat_detail_page.dart';
 import 'dart:io';
-import 'pesananDiproses.dart';
-import 'pesananSelesai.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -14,7 +12,6 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   bool isEditing = false;
-  Set<String> selectedProductIds = {}; // Track selected products
 
   @override
   Widget build(BuildContext context) {
@@ -41,206 +38,152 @@ class _CartPageState extends State<CartPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PesananDiproses(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[200],
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: CartService.getCartItems(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final items = snapshot.data ?? [];
+          if (items.isEmpty) {
+            return const Center(child: Text('Keranjang kosong'));
+          }
+
+          // Group by sellerUsername
+          final Map<String, List<Map<String, dynamic>>> grouped = {};
+          for (var item in items) {
+            final sellerUsername = item['sellerUsername'] ?? 'unknown';
+            grouped.putIfAbsent(sellerUsername, () => []).add(item);
+          }
+
+          return ListView.separated(
+            itemCount: grouped.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 24),
+            itemBuilder: (context, groupIndex) {
+              final sellerUsername = grouped.keys.elementAt(groupIndex);
+              final items = grouped[sellerUsername]!;
+              final seller = items.first['seller'] ?? {};
+              final sellerName = (seller['name'] ?? 'Seller').toString();
+              final sellerAvatar = (seller['avatarUrl'] ?? '').toString();
+              final sellerId = (items.first['sellerId'] ?? '').toString();
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text("Diproses"),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PesananSelesai(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[200],
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                  ),
-                  child: const Text("Selesai"),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: StreamBuilder<List<Map<String, dynamic>>>(
-              stream: CartService.getCartItems(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final items = snapshot.data ?? [];
-                if (items.isEmpty) {
-                  return const Center(child: Text('Keranjang kosong'));
-                }
-
-                // Group by sellerUsername
-                final Map<String, List<Map<String, dynamic>>> grouped = {};
-                for (var item in items) {
-                  final sellerUsername = item['sellerUsername'] ?? 'unknown';
-                  grouped.putIfAbsent(sellerUsername, () => []).add(item);
-                }
-
-                return ListView.separated(
-                  itemCount: grouped.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 24),
-                  itemBuilder: (context, groupIndex) {
-                    final sellerUsername = grouped.keys.elementAt(groupIndex);
-                    final items = grouped[sellerUsername]!;
-                    final seller = items.first['seller'] ?? {};
-                    final sellerName = seller['name'] ?? 'Seller';
-                    final sellerAvatar = seller['avatarUrl'] ?? '';
-                    final totalPrice = items.fold<int>(0, (sum, item) {
-                      final price = int.tryParse(item['price'].toString()) ?? 0;
-                      final quantity = item['quantity'] ?? 1;
-                      return sum + (price * quantity).toInt();
-                    });
-
-                    final selectedTotalPrice = items
-                        .where((item) => selectedProductIds
-                            .contains(item['id']?.toString() ?? ''))
-                        .fold<int>(0, (sum, item) {
-                      final price = int.tryParse(item['price'].toString()) ?? 0;
-                      final quantity = item['quantity'] ?? 1;
-                      return sum + (price * quantity).toInt();
-                    });
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Seller Info
+                      Row(
                         children: [
-                          // Seller Info
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundImage: sellerAvatar.isNotEmpty
-                                    ? NetworkImage(sellerAvatar)
-                                    : null,
-                                child: sellerAvatar.isEmpty
-                                    ? const Icon(Icons.person)
-                                    : null,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(sellerName,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16)),
-                              const SizedBox(width: 4),
-                              const Spacer(),
-                              Text(
-                                  'Rp ${selectedTotalPrice.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16)),
-                            ],
+                          CircleAvatar(
+                            backgroundImage: sellerAvatar.isNotEmpty
+                                ? NetworkImage(sellerAvatar)
+                                : null,
+                            child: sellerAvatar.isEmpty
+                                ? const Icon(Icons.person)
+                                : null,
                           ),
-                          const SizedBox(height: 12),
-                          // Product(s)
-                          ...items
-                              .map((item) => _buildProductCard(item, isEditing))
-                              .toList(),
-                          const SizedBox(height: 12),
+                          const SizedBox(width: 8),
+                          Text(sellerName,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                          const Spacer(),
                         ],
                       ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: selectedProductIds.isNotEmpty
-                  ? () {
-                      // TODO: Replace with your buy/checkout logic
-                      print('Buying products: ${selectedProductIds.toList()}');
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                textStyle:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                      const SizedBox(height: 12),
+                      // Product(s)
+                      ...items
+                          .map((item) => _buildProductCard(item, isEditing))
+                          .toList(),
+                      const SizedBox(height: 12),
+                      // Chat and Complete buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatDetailPage(
+                                    receiverId: sellerId,
+                                    name: sellerName,
+                                    avatarUrl: sellerAvatar,
+                                    productInfo:
+                                        items.first['productInfo'] ?? {},
+                                  ),
+                                ),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              textStyle:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                              side: const BorderSide(color: Colors.black),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Chat'),
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton(
+                            onPressed: () {
+                              // TODO: Implement complete order logic
+                              print('Completing order for seller: $sellerId');
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              textStyle:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Complete'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: const Text('Beli'),
-            ),
-          ),
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }
 
   Widget _buildProductCard(Map<String, dynamic> item, bool isEditing) {
     final quantity = item['quantity'] ?? 1;
-    final productId = item['id']?.toString() ?? '';
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[100],
+        color: Colors.white,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Checkbox(
-            value: selectedProductIds.contains(productId),
-            onChanged: (checked) {
-              setState(() {
-                if (checked == true) {
-                  selectedProductIds.add(productId);
-                } else {
-                  selectedProductIds.remove(productId);
-                }
-              });
-            },
-          ),
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: (item['images'] as List<dynamic>?)?.isNotEmpty == true

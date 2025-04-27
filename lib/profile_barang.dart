@@ -155,14 +155,6 @@ class _ProfileBarangState extends State<ProfileBarang>
                             ],
                           ),
                         ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.share),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -220,7 +212,7 @@ class _ProfileBarangState extends State<ProfileBarang>
                 // Barang Tab
                 _buildBarangTab(),
                 // Tentang Tab
-                const Center(child: Text('Tentang Content')),
+                _buildTentangTab(),
               ],
             ),
           ),
@@ -414,6 +406,65 @@ class _ProfileBarangState extends State<ProfileBarang>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTentangTab() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return const Center(child: Text('Silakan login untuk melihat informasi toko'));
+    }
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('toko').doc(currentUser.uid).get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: \\${snapshot.error}'));
+        }
+        final data = snapshot.data?.data() as Map<String, dynamic>?;
+        if (data == null || (data['deskripsi'] ?? '').toString().isEmpty) {
+          return const Center(child: Text('Tidak ada deskripsi terkait toko ini'));
+        }
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
+            children: [
+              if ((data['deskripsi'] ?? '').toString().isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.description),
+                  title: const Text('Deskripsi'),
+                  subtitle: Text(data['deskripsi'] ?? ''),
+                ),
+              if ((data['lokasi'] ?? '').toString().isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.location_on),
+                  title: const Text('Lokasi'),
+                  subtitle: Text(data['lokasi'] ?? ''),
+                ),
+              if ((data['kategori'] as List<dynamic>? ?? []).isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.category),
+                  title: const Text('Kategori'),
+                  subtitle: Text((data['kategori'] as List<dynamic>).join(', ')),
+                ),
+              if ((data['kontak'] ?? '').toString().isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.phone),
+                  title: const Text('Kontak'),
+                  subtitle: Text(data['kontak'] ?? ''),
+                ),
+              if ((data['jamOperasional'] ?? '').toString().isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.access_time),
+                  title: const Text('Jam Operasional'),
+                  subtitle: Text(data['jamOperasional'] ?? ''),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
