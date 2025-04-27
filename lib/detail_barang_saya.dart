@@ -8,7 +8,7 @@ class DetailBarangSaya extends StatelessWidget {
   final String? productId;
 
   const DetailBarangSaya({Key? key, required this.product, this.productId})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +29,10 @@ class DetailBarangSaya extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => EditDetailBarangToko(
-                          productId: productId!,
-                          product: product,
-                        ),
+                    builder: (context) => EditDetailBarangToko(
+                      productId: productId!,
+                      product: product,
+                    ),
                   ),
                 );
               },
@@ -43,23 +42,22 @@ class DetailBarangSaya extends StatelessWidget {
               onPressed: () async {
                 final confirmed = await showDialog<bool>(
                   context: context,
-                  builder:
-                      (context) => AlertDialog(
-                        title: const Text('Hapus Produk'),
-                        content: const Text(
-                          'Apakah Anda yakin ingin menghapus produk ini?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Batal'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Hapus'),
-                          ),
-                        ],
+                  builder: (context) => AlertDialog(
+                    title: const Text('Hapus Produk'),
+                    content: const Text(
+                      'Apakah Anda yakin ingin menghapus produk ini?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Batal'),
                       ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Hapus'),
+                      ),
+                    ],
+                  ),
                 );
 
                 if (confirmed == true && productId != null) {
@@ -88,7 +86,8 @@ class DetailBarangSaya extends StatelessWidget {
                     : '',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Center(child: Icon(Icons.error_outline, size: 40));
+                  return const Center(
+                      child: Icon(Icons.error_outline, size: 40));
                 },
               ),
             ),
@@ -100,7 +99,8 @@ class DetailBarangSaya extends StatelessWidget {
                   // Product Name
                   Text(
                     product['name'] ?? '',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   // Price
@@ -122,25 +122,32 @@ class DetailBarangSaya extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 20,
-                          backgroundImage: NetworkImage(
-                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Su_C6HSatMIb9Z4j0K5xce2QiCvmKSf4Qg&s',
-                          ),
+                          backgroundImage: (product['sellerAvatar'] ?? '')
+                                  .toString()
+                                  .isNotEmpty
+                              ? NetworkImage(product['sellerAvatar'])
+                              : null,
+                          child:
+                              (product['sellerAvatar'] ?? '').toString().isEmpty
+                                  ? const Icon(Icons.person)
+                                  : null,
                         ),
                         const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Sigit',
-                              style: TextStyle(
+                            Text(
+                              product['sellerName'] ?? '-',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'Bandung',
+                              product['sellerLocation'] ??
+                                  'Lokasi tidak diketahui',
                               style: TextStyle(color: Colors.grey[600]),
                             ),
                           ],
@@ -184,9 +191,9 @@ class DetailBarangSaya extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Deskripsi barangmu.\n\nMulai dengan judul, lalu tambahin detail termasuk bahan, kondisi, ukuran, dan gaya.',
-                    style: TextStyle(
+                  Text(
+                    product['description'] ?? '-',
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.black87,
                       height: 1.5,
@@ -194,22 +201,20 @@ class DetailBarangSaya extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   // Additional Info
-                  _buildInfoItem('Kategori', 'DVD'),
-                  _buildInfoItem('Kondisi', 'Baru tanpa tag'),
-                  _buildInfoItem('Warna', 'TAN'),
+                  _buildInfoItem('Kategori', product['category'] ?? '-'),
+                  _buildInfoItem('Kondisi', product['condition'] ?? '-'),
                   const Divider(height: 32),
                   // Tags
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children:
-                        [
-                          'Vintage',
-                          'DVD',
-                          'Hiburan',
-                          'Other',
-                        ].map((tag) => _buildTag(tag)).toList(),
-                  ),
+                  if (product['tags'] != null &&
+                      product['tags'] is List &&
+                      (product['tags'] as List).isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: (product['tags'] as List)
+                          .map((tag) => _buildTag(tag.toString()))
+                          .toList(),
+                    ),
                 ],
               ),
             ),
