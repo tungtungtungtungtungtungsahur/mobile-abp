@@ -252,7 +252,8 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             // Safe access to product fields with null checks
-            final imageUrl = product['imageUrl']?.toString() ?? '';
+            final images = product['images'] as List<dynamic>?;
+            final imageUrl = images?.isNotEmpty == true ? images![0].toString() : '';
             final name = product['name']?.toString() ?? 'No Name';
             final price = product['price']?.toString() ?? '0';
             final condition = product['condition']?.toString() ?? 'Unknown';

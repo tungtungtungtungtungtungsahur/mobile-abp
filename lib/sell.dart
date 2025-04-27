@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile_barang.dart'; // Make sure this import is correct
+import 'services/cloudinary_service.dart';
 
 class SellPage extends StatefulWidget {
   const SellPage({super.key});
@@ -277,6 +278,22 @@ class _SellPageState extends State<SellPage> {
         return;
       }
 
+      // Upload images to Cloudinary
+      List<String> imageUrls = [];
+      for (var imageFile in _selectedImages) {
+        String? imageUrl = await CloudinaryService.uploadImage(imageFile);
+        if (imageUrl != null) {
+          imageUrls.add(imageUrl);
+        }
+      }
+
+      if (imageUrls.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal mengupload gambar')),
+        );
+        return;
+      }
+
       final productData = {
         'name': _nameController.text,
         'price': int.tryParse(_priceController.text) ?? 0,
@@ -284,22 +301,22 @@ class _SellPageState extends State<SellPage> {
         'category': _selectedCategory,
         'condition': _selectedCondition,
         'style': _selectedStyle,
-        'images': _selectedImages.map((e) => e.path).toList(),
+        'images': imageUrls,
         'createdAt': FieldValue.serverTimestamp(),
-        'sellerId': user.uid, // Add seller's user ID
-        'sellerEmail': user.email, // Add seller's email
+        'sellerId': user.uid,
+        'sellerEmail': user.email,
       };
 
       try {
         await FirebaseFirestore.instance
             .collection('products')
             .add(productData);
-        Navigator.pushReplacementNamed(context, '/profile_barang');
+        _showSuccessDialog(context);
       } catch (e) {
         print('Error saving product: $e');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal menyimpan produk: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyimpan produk: $e')),
+        );
       }
     }
   }
