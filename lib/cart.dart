@@ -97,6 +97,10 @@ class _CartPageState extends State<CartPage> {
                         const Spacer(),
                         TextButton.icon(
                           onPressed: () {
+                            print('sellerId: '
+                                '[33m$sellerId[0m, sellerName: '
+                                '[33m$sellerName[0m, sellerAvatar: '
+                                '[33m$sellerAvatar[0m');
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -104,6 +108,7 @@ class _CartPageState extends State<CartPage> {
                                   receiverId: sellerId,
                                   name: sellerName,
                                   avatarUrl: sellerAvatar,
+                                  productInfo: items.first['productInfo'] ?? {},
                                 ),
                               ),
                             );

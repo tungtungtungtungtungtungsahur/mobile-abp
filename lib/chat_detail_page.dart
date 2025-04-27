@@ -174,14 +174,17 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      widget.productInfo!['imageUrl'],
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.broken_image, size: 30),
-                    ),
+                    child: (widget.productInfo?['images'] != null &&
+                            (widget.productInfo?['images'] as List).isNotEmpty)
+                        ? Image.network(
+                            widget.productInfo!['images'][0].toString(),
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image, size: 30),
+                          )
+                        : const Icon(Icons.broken_image, size: 30),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -189,7 +192,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.productInfo!['name'],
+                          (widget.productInfo?['name'] ?? '').toString(),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -197,11 +200,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Rp ${widget.productInfo!['price'].toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 14,
-                          ),
+                          'Rp ${(widget.productInfo?['price'] ?? '').toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
+                          style: const TextStyle(fontSize: 15),
                         ),
                       ],
                     ),
