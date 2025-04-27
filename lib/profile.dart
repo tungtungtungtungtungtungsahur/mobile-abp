@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile_barang.dart';
 import 'ktp.dart';
+import 'tentangToko.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'pesananSelesai.dart';
@@ -148,15 +149,26 @@ class _ProfilePageState extends State<ProfilePage> {
                 'Katalog Saya',
                 Icons.store,
                 onTap: () {
-                  Navigator.push(
+                 Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ProfileBarang(),
                     ),
                   );
+                }, 
+              ),
+              _buildMenuItem(
+                'Bio Data Toko',
+                 Icons.description,
+                 onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TentangToko(),
+                    ),
+                  );
                 },
               ),
-              _buildMenuItem('Alamat Pengiriman', Icons.location_on),
               _buildMenuItem(
                 'Upload KTP',
                 Icons.badge, // icon ID card
