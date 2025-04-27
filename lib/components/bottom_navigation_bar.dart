@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../cart_service.dart';
 
-class CustomBottomNavigationBar extends StatelessWidget {
+class CustomBottomNavigationBar extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onItemTapped;
 
@@ -9,6 +10,27 @@ class CustomBottomNavigationBar extends StatelessWidget {
     required this.selectedIndex,
     required this.onItemTapped,
   });
+
+  @override
+  State<CustomBottomNavigationBar> createState() => _CustomBottomNavigationBarState();
+}
+
+class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
+  int _cartCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToCartCount();
+  }
+
+  void _subscribeToCartCount() {
+    CartService.getCartItems().listen((items) {
+      setState(() {
+        _cartCount = items.length;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +52,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: 'Jual',
         ),
         BottomNavigationBarItem(
-          icon: _buildIconWithBadge(Icons.shopping_cart_outlined, 2),
-          activeIcon: _buildIconWithBadge(Icons.shopping_cart, 2),
+          icon: _buildIconWithBadge(Icons.shopping_cart_outlined, _cartCount),
+          activeIcon: _buildIconWithBadge(Icons.shopping_cart, _cartCount),
           label: 'Keranjang',
         ),
         const BottomNavigationBarItem(
@@ -40,10 +62,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: 'Akun',
         ),
       ],
-      currentIndex: selectedIndex,
-      selectedItemColor: Colors.black,
+      currentIndex: widget.selectedIndex,
+      selectedItemColor: Colors.deepOrange,
       unselectedItemColor: Colors.grey[600],
-      onTap: onItemTapped,
+      onTap: widget.onItemTapped,
       type: BottomNavigationBarType.fixed,
       showUnselectedLabels: true,
       backgroundColor: Colors.white,
