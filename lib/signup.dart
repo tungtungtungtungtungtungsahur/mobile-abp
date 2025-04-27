@@ -256,7 +256,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Masuk'),
+                      : const Text('Daftar'),
                 ),
                 const SizedBox(height: 20),
 

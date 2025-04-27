@@ -160,7 +160,7 @@ class _SignInPageState extends State<SignInPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Daftar'),
+                      : const Text('Masuk'),
                 ),
                 const SizedBox(height: 20),
 

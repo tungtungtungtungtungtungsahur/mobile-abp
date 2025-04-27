@@ -4,6 +4,7 @@ import 'package:project_kel_5/profile.dart';
 import 'package:project_kel_5/signin.dart';
 import 'package:project_kel_5/signup.dart';
 import 'package:project_kel_5/landingMenu.dart';
+import 'package:project_kel_5/ktp.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'profile_barang.dart';
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfilePage(),
         '/profile_barang': (context) => ProfileBarang(),
+        '/ktp': (context) => const KtpPage(),
       },
     );
   }

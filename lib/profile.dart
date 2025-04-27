@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'profile_barang.dart';
+import 'ktp.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -145,6 +146,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
               _buildMenuItem('Alamat Pengiriman', Icons.location_on),
+              _buildMenuItem(
+                'Upload KTP',
+                Icons.badge, // icon ID card
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const KtpPage(),
+                    ),
+                  );
+                },
+              ),
               _buildMenuItem('FAQ', Icons.help),
               _buildMenuItem('Pelayanan Pelanggan', Icons.headset_mic),
               _buildMenuItem('Pengaturan', Icons.settings),
