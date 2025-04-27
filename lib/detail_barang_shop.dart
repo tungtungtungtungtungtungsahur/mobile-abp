@@ -190,6 +190,8 @@ class DetailBarangShop extends StatelessWidget {
                           productForCart['id'] = product['productId'];
                           productForCart['sellerId'] =
                               product['sellerId'] ?? 'unknown';
+                          productForCart['sellerName'] = sellerName;
+                          productForCart['sellerAvatar'] = sellerAvatar;
                           CartService.addToCart(productForCart);
                           Navigator.pushReplacementNamed(
                             context,
