@@ -17,8 +17,7 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Keranjang',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Keranjang'),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -138,7 +137,7 @@ class _CartPageState extends State<CartPage> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text('Chat'),
+                            child: const Text('Chat penjual'),
                           ),
                           const SizedBox(width: 8),
                           TextButton(
@@ -157,7 +156,7 @@ class _CartPageState extends State<CartPage> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text('Complete'),
+                            child: const Text('Selesai'),
                           ),
                         ],
                       ),
