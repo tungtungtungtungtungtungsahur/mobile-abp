@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile_barang.dart'; // Make sure this import is correct
 import 'services/firebase_storage_service.dart';
+import 'ktp.dart';
 
 class SellPage extends StatefulWidget {
   const SellPage({super.key});
@@ -14,6 +15,8 @@ class SellPage extends StatefulWidget {
 }
 
 class _SellPageState extends State<SellPage> {
+  bool _isLoading = true;
+  bool _isKtpVerified = false;
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
@@ -55,6 +58,29 @@ class _SellPageState extends State<SellPage> {
     'Minimalis',
     'Other',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkKtpVerification();
+  }
+
+  Future<void> _checkKtpVerification() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      
+      if (mounted) {
+        setState(() {
+          _isKtpVerified = userDoc.data()?['ktpVerified'] ?? false;
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   Future<void> _pickImage() async {
     if (_selectedImages.length >= 4) {
@@ -336,6 +362,83 @@ class _SellPageState extends State<SellPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (!_isKtpVerified) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.badge,
+                  size: 80,
+                  color: Colors.blue,
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Verifikasi KTP Diperlukan',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Untuk dapat menjual produk, Anda perlu memverifikasi KTP terlebih dahulu.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => KtpPage(
+                          userId: FirebaseAuth.instance.currentUser!.uid,
+                          onVerificationComplete: () {
+                            Navigator.pop(context);
+                            _checkKtpVerification();
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                  ),
+                  child: const Text('Verifikasi KTP'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
