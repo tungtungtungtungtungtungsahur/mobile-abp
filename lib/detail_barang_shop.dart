@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_detail_page.dart';
 import 'dart:io';
 import 'profile_barang.dart';
+import 'visit_seller_shop.dart';
 
 class DetailBarangShop extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -179,7 +180,7 @@ class DetailBarangShop extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        ProfileBarang(sellerId: sellerId),
+                                        VisitSellerShop(sellerId: sellerId),
                                   ),
                                 );
                               },
