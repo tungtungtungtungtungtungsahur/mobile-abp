@@ -68,9 +68,9 @@ class _CartPageState extends State<CartPage> {
               final sellerUsername = grouped.keys.elementAt(groupIndex);
               final items = grouped[sellerUsername]!;
               final seller = items.first['seller'] ?? {};
-              final sellerName = seller['name'] ?? 'Seller';
-              final sellerAvatar = seller['avatarUrl'] ?? '';
-              final sellerId = items.first['sellerId'] ?? '';
+              final sellerName = (seller['name'] ?? 'Seller').toString();
+              final sellerAvatar = (seller['avatarUrl'] ?? '').toString();
+              final sellerId = (items.first['sellerId'] ?? '').toString();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -154,7 +154,9 @@ class _CartPageState extends State<CartPage> {
                             const Icon(Icons.broken_image, size: 60),
                       )
                     : Image.file(
-                        File(item['images'][0].toString().replaceAll('file://', '')),
+                        File(item['images'][0]
+                            .toString()
+                            .replaceAll('file://', '')),
                         width: 100,
                         height: 100,
                         fit: BoxFit.cover,
