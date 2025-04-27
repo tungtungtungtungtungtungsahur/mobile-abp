@@ -5,6 +5,7 @@ import 'tentangToko.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'pesananSelesai.dart';
+import 'bantuan.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -171,7 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               _buildMenuItem(
                 'Upload KTP',
-                Icons.badge, // icon ID card
+                Icons.badge,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -186,7 +187,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 },
               ),
-              _buildMenuItem('FAQ', Icons.help),
+              _buildMenuItem(
+                'Bantuan',
+                Icons.help,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BantuanPage(),
+                    ),
+                  );
+                },
+              ),
               _buildMenuItem('Pelayanan Pelanggan', Icons.headset_mic),
               _buildMenuItem('Pengaturan', Icons.settings),
             ],
