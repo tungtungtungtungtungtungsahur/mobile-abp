@@ -16,6 +16,42 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _usernameController = TextEditingController();
   File? _newProfileImage;
   bool _isLoading = false;
+  String? _currentImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          _usernameController.text = data['username'] ?? '';
+          _currentImageUrl = data['profileImageUrl'];
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat data: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -97,8 +133,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 backgroundColor: Colors.grey[300],
                 backgroundImage: _newProfileImage != null
                     ? FileImage(_newProfileImage!)
-                    : null,
-                child: _newProfileImage == null
+                    : _currentImageUrl != null
+                        ? NetworkImage(_currentImageUrl!) as ImageProvider
+                        : null,
+                child: _newProfileImage == null && _currentImageUrl == null
                     ? const Icon(Icons.camera_alt, size: 30, color: Colors.black45)
                     : null,
               ),
