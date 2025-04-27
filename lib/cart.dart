@@ -11,7 +11,6 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   bool isEditing = false;
-  Set<String> selectedProductIds = {}; // Track selected products
 
   @override
   Widget build(BuildContext context) {
@@ -70,20 +69,7 @@ class _CartPageState extends State<CartPage> {
               final seller = items.first['seller'] ?? {};
               final sellerName = seller['name'] ?? 'Seller';
               final sellerAvatar = seller['avatarUrl'] ?? '';
-              final totalPrice = items.fold<int>(0, (sum, item) {
-                final price = int.tryParse(item['price'].toString()) ?? 0;
-                final quantity = item['quantity'] ?? 1;
-                return sum + (price * quantity).toInt();
-              });
-
-              final selectedTotalPrice = items
-                  .where((item) =>
-                      selectedProductIds.contains(item['id']?.toString() ?? ''))
-                  .fold<int>(0, (sum, item) {
-                final price = int.tryParse(item['price'].toString()) ?? 0;
-                final quantity = item['quantity'] ?? 1;
-                return sum + (price * quantity).toInt();
-              });
+              final sellerId = items.first['sellerId'] ?? '';
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -107,10 +93,23 @@ class _CartPageState extends State<CartPage> {
                                 fontWeight: FontWeight.bold, fontSize: 16)),
                         const SizedBox(width: 4),
                         const Spacer(),
-                        Text(
-                            'Rp ${selectedTotalPrice.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatDetailPage(
+                                  receiverId: sellerId,
+                                  name: sellerName,
+                                  avatarUrl: sellerAvatar,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.chat, color: Colors.blue),
+                          label: const Text('Chat',
+                              style: TextStyle(color: Colors.blue)),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -126,39 +125,11 @@ class _CartPageState extends State<CartPage> {
           );
         },
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: selectedProductIds.isNotEmpty
-                  ? () {
-                      // TODO: Replace with your buy/checkout logic
-                      print('Buying products: ${selectedProductIds.toList()}');
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                textStyle:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Beli'),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
   Widget _buildProductCard(Map<String, dynamic> item, bool isEditing) {
     final quantity = item['quantity'] ?? 1;
-    final productId = item['id']?.toString() ?? '';
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -169,18 +140,6 @@ class _CartPageState extends State<CartPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Checkbox(
-            value: selectedProductIds.contains(productId),
-            onChanged: (checked) {
-              setState(() {
-                if (checked == true) {
-                  selectedProductIds.add(productId);
-                } else {
-                  selectedProductIds.remove(productId);
-                }
-              });
-            },
-          ),
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
