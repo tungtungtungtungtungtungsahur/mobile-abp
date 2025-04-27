@@ -243,6 +243,18 @@ class DetailBarangShop extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
 
+                            // Description Section
+                            const Text(
+                              'Deskripsi',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(description),
+                            const SizedBox(height: 16),
+
                             // Product Details Section
                             const Text(
                               'Detail Produk',
@@ -255,18 +267,6 @@ class DetailBarangShop extends StatelessWidget {
                             _buildDetailRow('Kategori', category),
                             _buildDetailRow('Kondisi', condition),
                             _buildDetailRow('Style', style),
-                            const SizedBox(height: 16),
-
-                            // Description Section
-                            const Text(
-                              'Deskripsi',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(description),
                             const SizedBox(height: 16),
                           ],
                         ),

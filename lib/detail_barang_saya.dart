@@ -113,108 +113,34 @@ class DetailBarangSaya extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Seller Info
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundImage: (product['sellerAvatar'] ?? '')
-                                  .toString()
-                                  .isNotEmpty
-                              ? NetworkImage(product['sellerAvatar'])
-                              : null,
-                          child:
-                              (product['sellerAvatar'] ?? '').toString().isEmpty
-                                  ? const Icon(Icons.person)
-                                  : null,
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product['sellerName'] ?? '-',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              product['sellerLocation'] ??
-                                  'Lokasi tidak diketahui',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.verified,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Terverifikasi',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                   // Description
                   const Text(
                     'Deskripsi',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     product['description'] ?? '-',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      height: 1.5,
-                    ),
+                    style: const TextStyle(fontSize: 15, color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
-                  // Additional Info
-                  _buildInfoItem('Kategori', product['category'] ?? '-'),
-                  _buildInfoItem('Kondisi', product['condition'] ?? '-'),
-                  const Divider(height: 32),
-                  // Tags
-                  if (product['tags'] != null &&
-                      product['tags'] is List &&
-                      (product['tags'] as List).isNotEmpty)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: (product['tags'] as List)
-                          .map((tag) => _buildTag(tag.toString()))
-                          .toList(),
-                    ),
+                  // Detail Produk Section
+                  const Text(
+                    'Detail Produk',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Kategori: ${product['category'] ?? '-'}',
+                      style:
+                          const TextStyle(fontSize: 15, color: Colors.black87)),
+                  const SizedBox(height: 4),
+                  Text('Kondisi: ${product['condition'] ?? '-'}',
+                      style:
+                          const TextStyle(fontSize: 15, color: Colors.black87)),
+                  const SizedBox(height: 4),
+                  Text('Style: ${product['style'] ?? '-'}',
+                      style:
+                          const TextStyle(fontSize: 15, color: Colors.black87)),
                 ],
               ),
             ),
