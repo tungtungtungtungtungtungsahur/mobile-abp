@@ -39,12 +39,6 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfilePage(),
         '/profile_barang': (context) => ProfileBarang(
             sellerId: FirebaseAuth.instance.currentUser?.uid ?? ''),
-        '/ktp': (context) => KtpPage(
-              userId: FirebaseAuth.instance.currentUser?.uid ?? '',
-              onVerificationComplete: () {
-                Navigator.pushReplacementNamed(context, '/home');
-              },
-            ),
       },
     );
   }

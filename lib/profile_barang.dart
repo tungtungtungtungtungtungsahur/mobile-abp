@@ -113,10 +113,10 @@ class _ProfileBarangState extends State<ProfileBarang>
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue,
+                                      color: data['ktpVerified'] == true ? Colors.blue : Colors.red,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(
@@ -126,7 +126,7 @@ class _ProfileBarangState extends State<ProfileBarang>
                                         ),
                                         SizedBox(width: 2),
                                         Text(
-                                          'Terverifikasi',
+                                          data['ktpVerified'] == true ? 'Terverifikasi' : 'Belum Terverifikasi',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 10,

@@ -46,17 +46,7 @@ class _SignUpPageState extends State<SignUpPage> {
         );
 
         if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => KtpPage(
-                userId: userCredential!.user!.uid,
-                onVerificationComplete: () {
-                  Navigator.pushReplacementNamed(context, '/home');
-                },
-              ),
-            ),
-          );
+          Navigator.pushReplacementNamed(context, '/home');
         }
       } catch (e) {
         if (mounted) {
