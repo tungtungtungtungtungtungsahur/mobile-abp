@@ -155,14 +155,6 @@ class _ProfileBarangState extends State<ProfileBarang>
                             ],
                           ),
                         ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.share),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                     const SizedBox(height: 16),

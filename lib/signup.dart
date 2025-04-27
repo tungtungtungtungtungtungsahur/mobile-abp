@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
+import 'ktp.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -37,7 +38,7 @@ class _SignUpPageState extends State<SignUpPage> {
       });
 
       try {
-        await _authService.signUp(
+        final userCredential = await _authService.signUp(
           email: _emailController.text.trim(),
           password: _passwordController.text,
           name: _nameController.text.trim(),
@@ -45,7 +46,17 @@ class _SignUpPageState extends State<SignUpPage> {
         );
 
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => KtpPage(
+                userId: userCredential!.user!.uid,
+                onVerificationComplete: () {
+                  Navigator.pushReplacementNamed(context, '/home');
+                },
+              ),
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {

@@ -81,6 +81,157 @@ class _TentangTokoState extends State<TentangToko> {
     }, SetOptions(merge: true));
   }
 
+  void _showCategoryBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Pilih Kategori', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 12),
+              ..._categories.map((category) {
+                final isSelected = _selectedCategories.contains(category);
+                return CheckboxListTile(
+                  value: isSelected,
+                  title: Text(category),
+                  activeColor: Colors.grey[700],
+                  onChanged: (checked) {
+                    setState(() {
+                      if (checked == true) {
+                        _selectedCategories.add(category);
+                      } else {
+                        _selectedCategories.remove(category);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Selesai'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLocationDialog() {
+    final controller = TextEditingController(text: _lokasiController.text);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Lokasi Toko'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Contoh: Bandung'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _lokasiController.text = controller.text;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showJamOperasionalDialog() {
+    final controller = TextEditingController(text: _jamOperasionalController.text);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Jam Operasional'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Contoh: Senin-Minggu, 08:00-21:00'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _jamOperasionalController.text = controller.text;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showKontakDialog() {
+    final controller = TextEditingController(text: _kontakController.text);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Kontak (WhatsApp/Telepon)'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(hintText: 'No. WhatsApp/Telepon'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _kontakController.text = controller.text;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _deskripsiController.dispose();
@@ -93,209 +244,163 @@ class _TentangTokoState extends State<TentangToko> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Informasi Toko'),
+        backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Biodata Toko', style: TextStyle(color: Colors.black)),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                controller: _deskripsiController,
-                                maxLines: 3,
-                                style: const TextStyle(color: Colors.black87),
-                                decoration: InputDecoration(
-                                  labelText: 'Deskripsi Toko',
-                                  labelStyle: const TextStyle(color: Colors.black54),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  prefixIcon: const Icon(Icons.description, color: Colors.black54),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Deskripsi toko harus diisi';
-                                  }
-                                  return null;
-                                },
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Deskripsi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _deskripsiController,
+                            maxLines: 3,
+                            style: const TextStyle(color: Colors.black87),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.grey[100],
+                              hintText: 'Deskripsi toko',
+                              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
                               ),
-                            ],
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.black),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Deskripsi toko harus diisi';
+                              }
+                              return null;
+                            },
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextFormField(
-                                controller: _lokasiController,
-                                style: const TextStyle(color: Colors.black87),
-                                decoration: InputDecoration(
-                                  labelText: 'Lokasi Toko',
-                                  labelStyle: const TextStyle(color: Colors.black54),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  prefixIcon: const Icon(Icons.location_on, color: Colors.black54),
-                                  hintText: 'Contoh: Bandung',
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Lokasi toko harus diisi';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Kategori',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8.0,
+                    ),
+                    const SizedBox(height: 32),
+                    // ListTile-style for Lokasi
+                    ListTile(
+                      title: const Text('Lokasi', style: TextStyle(fontSize: 16)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _lokasiController.text.isEmpty ? 'Pilih lokasi' : _lokasiController.text,
+                            style: TextStyle(
+                              color: _lokasiController.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                        ],
+                      ),
+                      onTap: _showLocationDialog,
+                    ),
+                    const Divider(height: 1),
+                    const SizedBox(height: 32),
+                    // ListTile-style for Kategori
+                    ListTile(
+                      title: const Text('Kategori', style: TextStyle(fontSize: 16)),
+                      subtitle: _selectedCategories.isEmpty
+                          ? Text('Pilih kategori', style: TextStyle(color: Colors.grey[400], fontSize: 15))
+                          : Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Wrap(
+                                spacing: 4.0,
                                 runSpacing: 8.0,
-                                children: _categories.map((category) {
-                                  final isSelected = _selectedCategories.contains(category);
-                                  return FilterChip(
-                                    label: Text(
-                                      category,
-                                      style: TextStyle(
-                                        color: isSelected ? Colors.white : Colors.black87,
-                                      ),
-                                    ),
-                                    selected: isSelected,
-                                    onSelected: (bool selected) {
-                                      setState(() {
-                                        if (selected) {
-                                          _selectedCategories.add(category);
-                                        } else {
-                                          _selectedCategories.remove(category);
-                                        }
-                                      });
-                                    },
-                                    backgroundColor: Colors.grey[200],
-                                    selectedColor: Colors.grey[800],
-                                    checkmarkColor: Colors.white,
-                                    showCheckmark: true,
-                                  );
-                                }).toList(),
-                              ),
-                              if (_selectedCategories.isEmpty)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8.0),
-                                  child: Text(
-                                    'Pilih minimal satu kategori',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 12,
-                                    ),
+                                children: _selectedCategories.map((category) => Chip(
+                                  label: Text(
+                                    category,
+                                    style: const TextStyle(color: Colors.white, fontSize: 12),
                                   ),
-                                ),
-                            ],
+                                  backgroundColor: Colors.grey[700],
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  padding: EdgeInsets.zero,
+                                )).toList(),
+                              ),
+                            ),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                      onTap: _showCategoryBottomSheet,
+                    ),
+                    const Divider(height: 1),
+                    const SizedBox(height: 32),
+                    // ListTile-style for Jam Operasional
+                    ListTile(
+                      title: const Text('Jam Operasional', style: TextStyle(fontSize: 16)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _jamOperasionalController.text.isEmpty ? 'Pilih jam' : _jamOperasionalController.text,
+                            style: TextStyle(
+                              color: _jamOperasionalController.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                              fontSize: 15,
+                            ),
                           ),
-                        ),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                controller: _kontakController,
-                                style: const TextStyle(color: Colors.black87),
-                                decoration: InputDecoration(
-                                  labelText: 'Kontak (WhatsApp/Telepon)',
-                                  labelStyle: const TextStyle(color: Colors.black54),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  prefixIcon: const Icon(Icons.phone, color: Colors.black54),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                ),
-                                keyboardType: TextInputType.phone,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Kontak harus diisi';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _jamOperasionalController,
-                                style: const TextStyle(color: Colors.black87),
-                                decoration: InputDecoration(
-                                  labelText: 'Jam Operasional',
-                                  labelStyle: const TextStyle(color: Colors.black54),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  prefixIcon: const Icon(Icons.access_time, color: Colors.black54),
-                                  hintText: 'Contoh: Senin-Minggu, 08:00-21:00',
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Jam operasional harus diisi';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
+                      onTap: _showJamOperasionalDialog,
+                    ),
+                    const Divider(height: 1),
+                    const SizedBox(height: 32),
+                    // ListTile-style for Kontak
+                    ListTile(
+                      title: const Text('Kontak', style: TextStyle(fontSize: 16)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _kontakController.text.isEmpty ? 'Pilih kontak' : _kontakController.text,
+                            style: TextStyle(
+                              color: _kontakController.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                              fontSize: 15,
+                            ),
                           ),
-                        ),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                      SizedBox(
+                      onTap: _showKontakDialog,
+                    ),
+                    const Divider(height: 1),
+                    const SizedBox(height: 40),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () async {
-                            if (_formKey.currentState!.validate() && _selectedCategories.isNotEmpty) {
+                            if (_formKey.currentState!.validate() &&
+                                _selectedCategories.isNotEmpty &&
+                                _lokasiController.text.isNotEmpty &&
+                                _jamOperasionalController.text.isNotEmpty) {
                               await _saveData();
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -306,6 +411,14 @@ class _TentangTokoState extends State<TentangToko> {
                             } else if (_selectedCategories.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Pilih minimal satu kategori')),
+                              );
+                            } else if (_lokasiController.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Lokasi toko harus diisi')),
+                              );
+                            } else if (_jamOperasionalController.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Jam operasional harus diisi')),
                               );
                             }
                           },
@@ -322,8 +435,9 @@ class _TentangTokoState extends State<TentangToko> {
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
             ),
