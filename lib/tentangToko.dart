@@ -28,6 +28,7 @@ class _TentangTokoState extends State<TentangToko> {
   ];
   
   final List<String> _selectedCategories = [];
+  final List<String> _tempSelectedCategories = [];
   bool _isLoading = true;
 
   @override
@@ -82,54 +83,74 @@ class _TentangTokoState extends State<TentangToko> {
   }
 
   void _showCategoryBottomSheet() {
+    _tempSelectedCategories.clear();
+    _tempSelectedCategories.addAll(_selectedCategories);
+    
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Pilih Kategori', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 12),
-              ..._categories.map((category) {
-                final isSelected = _selectedCategories.contains(category);
-                return CheckboxListTile(
-                  value: isSelected,
-                  title: Text(category),
-                  activeColor: Colors.grey[700],
-                  onChanged: (checked) {
-                    setState(() {
-                      if (checked == true) {
-                        _selectedCategories.add(category);
-                      } else {
-                        _selectedCategories.remove(category);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Pilih Kategori', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: _categories.map((category) {
+                          final isSelected = _tempSelectedCategories.contains(category);
+                          return CheckboxListTile(
+                            value: isSelected,
+                            title: Text(category),
+                            activeColor: Colors.grey[700],
+                            onChanged: (checked) {
+                              setModalState(() {
+                                if (checked == true) {
+                                  _tempSelectedCategories.add(category);
+                                } else {
+                                  _tempSelectedCategories.remove(category);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
-                  child: const Text('Selesai'),
-                ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedCategories.clear();
+                          _selectedCategories.addAll(_tempSelectedCategories);
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Selesai'),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          }
         );
       },
     );
@@ -331,19 +352,23 @@ class _TentangTokoState extends State<TentangToko> {
                           ? Text('Pilih kategori', style: TextStyle(color: Colors.grey[400], fontSize: 15))
                           : Padding(
                               padding: const EdgeInsets.only(top: 8.0),
-                              child: Wrap(
-                                spacing: 4.0,
-                                runSpacing: 8.0,
-                                children: _selectedCategories.map((category) => Chip(
-                                  label: Text(
-                                    category,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                  ),
-                                  backgroundColor: Colors.grey[700],
-                                  visualDensity: VisualDensity.compact,
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  padding: EdgeInsets.zero,
-                                )).toList(),
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: _selectedCategories.map((category) => Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Chip(
+                                      label: Text(
+                                        category,
+                                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                                      ),
+                                      backgroundColor: Colors.grey[700],
+                                      visualDensity: VisualDensity.compact,
+                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  )).toList(),
+                                ),
                               ),
                             ),
                       trailing: const Icon(Icons.chevron_right, color: Colors.grey),
