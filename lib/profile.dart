@@ -158,7 +158,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 }, 
               ),
               _buildMenuItem(
-                'Bio Data Toko',
+                'Biodata Toko',
                  Icons.description,
                  onTap: () {
                   Navigator.push(
