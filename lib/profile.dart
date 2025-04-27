@@ -81,11 +81,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Stack(
                           children: [
-                            const CircleAvatar(
+                            CircleAvatar(
                               radius: 50,
-                              backgroundImage: NetworkImage(
-                                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
-                              ),
+                              backgroundImage: data['profileImageUrl'] != null
+                                  ? NetworkImage(data['profileImageUrl'])
+                                  : const NetworkImage(
+                                      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
+                                    ),
                             ),
                             Positioned(
                               right: 0,
