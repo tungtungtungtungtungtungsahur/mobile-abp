@@ -273,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: product['style']?.toString() ?? '-',
                     description: product['description']?.toString() ?? '-',
                     color: product['color']?.toString() ?? '-',
+                    sellerId: product['sellerId'] ?? '',
                   );
                 }
 
@@ -292,6 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: product['style']?.toString() ?? '-',
                   description: product['description']?.toString() ?? '-',
                   color: product['color']?.toString() ?? '-',
+                  sellerId: product['sellerId'] ?? '',
                 );
               },
             );
@@ -312,6 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String style,
     required String description,
     required String color,
+    required String sellerId,
   }) {
     bool isNew = condition.toLowerCase() == 'new';
     return InkWell(
@@ -332,6 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'style': style,
                 'description': description,
                 'color': color,
+                'sellerId': sellerId,
                 // Add more fields if needed
               },
             ),

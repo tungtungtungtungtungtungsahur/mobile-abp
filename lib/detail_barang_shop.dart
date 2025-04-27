@@ -25,7 +25,7 @@ class DetailBarangShop extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(name),
+        title: const Text('Produk'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
