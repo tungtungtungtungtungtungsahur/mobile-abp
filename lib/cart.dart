@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'cart_service.dart';
 import 'chat_detail_page.dart';
 import 'dart:io';
+import 'cart_done.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -16,169 +19,197 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Keranjang'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                isEditing = !isEditing;
-              });
-            },
-            child: Text(
-              isEditing ? 'Selesai' : 'Edit',
-              style: const TextStyle(color: Colors.black),
+      body: Column(
+        children: [
+          // Edit/Selesai button at the top right
+          Padding(
+            padding: const EdgeInsets.only(top: 24, right: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      isEditing = !isEditing;
+                    });
+                  },
+                  child: Text(
+                    isEditing ? 'Selesai' : 'Edit',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Cart content
+          Expanded(
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: CartService.getCartItems(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final items = snapshot.data ?? [];
+                if (items.isEmpty) {
+                  return const Center(child: Text('Keranjang kosong'));
+                }
+
+                // Group by sellerUsername
+                final Map<String, List<Map<String, dynamic>>> grouped = {};
+                for (var item in items) {
+                  final sellerUsername = item['sellerUsername'] ?? 'unknown';
+                  grouped.putIfAbsent(sellerUsername, () => []).add(item);
+                }
+
+                return ListView.separated(
+                  itemCount: grouped.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 24),
+                  itemBuilder: (context, groupIndex) {
+                    final sellerUsername = grouped.keys.elementAt(groupIndex);
+                    final items = grouped[sellerUsername]!;
+                    final seller = items.first['seller'] ?? {};
+                    final sellerName = (seller['name'] ?? 'Seller').toString();
+                    final sellerAvatar = (seller['avatarUrl'] ?? '').toString();
+                    final sellerId = (items.first['sellerId'] ?? '').toString();
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Seller Info
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: sellerAvatar.isNotEmpty
+                                      ? NetworkImage(sellerAvatar)
+                                      : null,
+                                  child: sellerAvatar.isEmpty
+                                      ? const Icon(Icons.person)
+                                      : null,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(sellerName,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16)),
+                                const Spacer(),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // Product(s)
+                            ...items
+                                .map((item) =>
+                                    _buildProductCard(item, isEditing))
+                                .toList(),
+                            const SizedBox(height: 12),
+                            // Chat and Complete buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ChatDetailPage(
+                                          receiverId: sellerId,
+                                          name: sellerName,
+                                          avatarUrl: sellerAvatar,
+                                          productInfo: {
+                                            'id': items.first['productId'] ??
+                                                items.first['id'],
+                                            'name': items.first['name'],
+                                            'price': items.first['price'],
+                                            'images': items.first['images'],
+                                            'description':
+                                                items.first['description'] ??
+                                                    '',
+                                            'condition':
+                                                items.first['condition'] ?? '',
+                                            'sellerName': sellerName,
+                                            'sellerUsername': sellerUsername,
+                                            'sellerId': sellerId,
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.black,
+                                    textStyle: const TextStyle(
+                                        fontWeight: FontWeight.w500),
+                                    side: const BorderSide(color: Colors.black),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14, horizontal: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text('Chat penjual'),
+                                ),
+                                const SizedBox(width: 8),
+                                TextButton(
+                                  onPressed: () async {
+                                    final user =
+                                        FirebaseAuth.instance.currentUser;
+                                    if (user != null) {
+                                      for (var item in items) {
+                                        // Remove from cart
+                                        await CartService.removeFromCart(
+                                            item['id']);
+                                        // Add to cart_done
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(user.uid)
+                                            .collection('cart_done')
+                                            .add(item);
+                                      }
+                                    }
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CartDonePage()),
+                                    );
+                                  },
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    foregroundColor: Colors.white,
+                                    textStyle: const TextStyle(
+                                        fontWeight: FontWeight.w500),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14, horizontal: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text('Selesai'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
-      ),
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: CartService.getCartItems(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final items = snapshot.data ?? [];
-          if (items.isEmpty) {
-            return const Center(child: Text('Keranjang kosong'));
-          }
-
-          // Group by sellerUsername
-          final Map<String, List<Map<String, dynamic>>> grouped = {};
-          for (var item in items) {
-            final sellerUsername = item['sellerUsername'] ?? 'unknown';
-            grouped.putIfAbsent(sellerUsername, () => []).add(item);
-          }
-
-          return ListView.separated(
-            itemCount: grouped.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 24),
-            itemBuilder: (context, groupIndex) {
-              final sellerUsername = grouped.keys.elementAt(groupIndex);
-              final items = grouped[sellerUsername]!;
-              final seller = items.first['seller'] ?? {};
-              final sellerName = (seller['name'] ?? 'Seller').toString();
-              final sellerAvatar = (seller['avatarUrl'] ?? '').toString();
-              final sellerId = (items.first['sellerId'] ?? '').toString();
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Seller Info
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: sellerAvatar.isNotEmpty
-                                ? NetworkImage(sellerAvatar)
-                                : null,
-                            child: sellerAvatar.isEmpty
-                                ? const Icon(Icons.person)
-                                : null,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(sellerName,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                          const Spacer(),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      // Product(s)
-                      ...items
-                          .map((item) => _buildProductCard(item, isEditing))
-                          .toList(),
-                      const SizedBox(height: 12),
-                      // Chat and Complete buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ChatDetailPage(
-                                    receiverId: sellerId,
-                                    name: sellerName,
-                                    avatarUrl: sellerAvatar,
-                                    productInfo: {
-                                      'id': items.first['productId'] ??
-                                          items.first['id'],
-                                      'name': items.first['name'],
-                                      'price': items.first['price'],
-                                      'images': items.first['images'],
-                                      'description':
-                                          items.first['description'] ?? '',
-                                      'condition':
-                                          items.first['condition'] ?? '',
-                                      'sellerName': sellerName,
-                                      'sellerUsername': sellerUsername,
-                                      'sellerId': sellerId,
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.black,
-                              textStyle:
-                                  const TextStyle(fontWeight: FontWeight.w500),
-                              side: const BorderSide(color: Colors.black),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text('Chat penjual'),
-                          ),
-                          const SizedBox(width: 8),
-                          TextButton(
-                            onPressed: () {
-                              // TODO: Implement complete order logic
-                              print('Completing order for seller: $sellerId');
-                            },
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              textStyle:
-                                  const TextStyle(fontWeight: FontWeight.w500),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text('Selesai'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
       ),
     );
   }

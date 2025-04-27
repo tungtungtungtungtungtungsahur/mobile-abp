@@ -5,7 +5,7 @@ import 'components/bottom_navigation_bar.dart';
 import 'profile.dart';
 import 'sell.dart';
 import 'chat_list_page.dart';
-import 'cart.dart';
+import 'cart_tab_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'detail_barang_shop.dart';
 import 'services/search_service.dart';
@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Cart tab content
   Widget _buildCartContent() {
-    return const CartPage();
+    return const CartTabPage();
   }
 
   // Profile tab content
