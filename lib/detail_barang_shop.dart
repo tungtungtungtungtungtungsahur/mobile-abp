@@ -32,10 +32,14 @@ class DetailBarangShop extends StatelessWidget {
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: sellerId.isNotEmpty
-            ? FirebaseFirestore.instance.collection('users').doc(sellerId).snapshots()
+            ? FirebaseFirestore.instance
+                .collection('users')
+                .doc(sellerId)
+                .snapshots()
             : null,
         builder: (context, sellerSnapshot) {
-          final sellerData = sellerSnapshot.data?.data() as Map<String, dynamic>?;
+          final sellerData =
+              sellerSnapshot.data?.data() as Map<String, dynamic>?;
           final sellerName = sellerData?['name'] ?? 'Unknown Seller';
           final sellerUsername = sellerData?['username'] ?? 'unknown';
           final sellerAvatar = sellerData?['avatarUrl'] ?? '';
@@ -56,16 +60,63 @@ class DetailBarangShop extends StatelessWidget {
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 errorBuilder: (context, error, stackTrace) =>
-                                        const Center(child: Icon(Icons.broken_image, size: 80)),
+                                    const Center(
+                                        child:
+                                            Icon(Icons.broken_image, size: 80)),
                               )
                             : const Center(
-                                child: Icon(Icons.image_not_supported, size: 80)),
+                                child:
+                                    Icon(Icons.image_not_supported, size: 80)),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Seller Profile Box
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundImage: sellerAvatar.isNotEmpty
+                                        ? NetworkImage(sellerAvatar)
+                                        : null,
+                                    backgroundColor: Colors.grey[300],
+                                    child: sellerAvatar.isEmpty
+                                        ? const Icon(Icons.person)
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        sellerName,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        '@$sellerUsername',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                             Text(
                               name,
                               style: const TextStyle(
@@ -81,53 +132,6 @@ class DetailBarangShop extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
 
-                            // Seller Information
-                            if (sellerId.isNotEmpty)
-                                  Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[100],
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 20,
-                                            backgroundImage: sellerAvatar.isNotEmpty
-                                                ? NetworkImage(sellerAvatar)
-                                                : null,
-                                            backgroundColor: Colors.grey[300],
-                                            child: sellerAvatar.isEmpty
-                                                ? const Icon(Icons.person)
-                                                : null,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  sellerName,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '@${sellerUsername}',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.grey[600],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                  ),
-                            const SizedBox(height: 16),
-
                             // Product Details Section
                             const Text(
                               'Detail Produk',
@@ -139,7 +143,6 @@ class DetailBarangShop extends StatelessWidget {
                             const SizedBox(height: 8),
                             _buildDetailRow('Kategori', category),
                             _buildDetailRow('Kondisi', condition),
-                            _buildDetailRow('Warna', color),
                             _buildDetailRow('Style', style),
                             const SizedBox(height: 16),
 
@@ -154,19 +157,6 @@ class DetailBarangShop extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(description),
                             const SizedBox(height: 16),
-
-                            // Product Metadata
-                            const Text(
-                              'Informasi Tambahan',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            _buildDetailRow('Dibuat', _formatDate(createdAt)),
-                            if (updatedAt != null)
-                              _buildDetailRow('Diperbarui', _formatDate(updatedAt)),
                           ],
                         ),
                       ),
@@ -195,9 +185,11 @@ class DetailBarangShop extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () {
                           // Add to cart logic
-                          final productForCart = Map<String, dynamic>.from(product);
+                          final productForCart =
+                              Map<String, dynamic>.from(product);
                           productForCart['id'] = product['productId'];
-                          productForCart['sellerId'] = product['sellerId'] ?? 'unknown';
+                          productForCart['sellerId'] =
+                              product['sellerId'] ?? 'unknown';
                           CartService.addToCart(productForCart);
                           Navigator.pushReplacementNamed(
                             context,
@@ -250,7 +242,7 @@ class DetailBarangShop extends StatelessWidget {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
