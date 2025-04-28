@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:location/location.dart' as loc;
+import 'package:geocoding/geocoding.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final String receiverId;
@@ -26,11 +30,19 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late String _chatId;
 
+  LatLng? _selectedLocation;
+  final MapController _mapController = MapController();
+  final TextEditingController _searchController = TextEditingController();
+  bool _showMap = false;
+  bool _loadingMap = false;
+  loc.Location? _locationService;
+
   @override
   void initState() {
     super.initState();
     _getOrCreateChat();
     _markMessagesAsRead();
+    _locationService = loc.Location();
   }
 
   Future<void> _getOrCreateChat() async {
@@ -122,6 +134,98 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     }
   }
 
+  Future<void> _getCurrentLocation() async {
+    setState(() => _loadingMap = true);
+    try {
+      bool serviceEnabled = await _locationService!.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await _locationService!.requestService();
+        if (!serviceEnabled) {
+          setState(() => _loadingMap = false);
+          return;
+        }
+      }
+      loc.PermissionStatus permissionGranted = await _locationService!.hasPermission();
+      if (permissionGranted == loc.PermissionStatus.denied) {
+        permissionGranted = await _locationService!.requestPermission();
+        if (permissionGranted != loc.PermissionStatus.granted) {
+          setState(() => _loadingMap = false);
+          return;
+        }
+      }
+      final locData = await _locationService!.getLocation();
+      setState(() {
+        _selectedLocation = LatLng(locData.latitude ?? 0.0, locData.longitude ?? 0.0);
+        _loadingMap = false;
+      });
+      _mapController.move(_selectedLocation!, 15.0);
+    } catch (e) {
+      setState(() => _loadingMap = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mendapatkan lokasi: $e')),
+      );
+    }
+  }
+
+  Future<void> _searchLocation(String query) async {
+    setState(() => _loadingMap = true);
+    try {
+      List<Location> locations = await locationFromAddress(query);
+      if (locations.isNotEmpty) {
+        final loc = locations.first;
+        setState(() {
+          _selectedLocation = LatLng(loc.latitude, loc.longitude);
+          _loadingMap = false;
+        });
+        _mapController.move(_selectedLocation!, 15.0);
+      } else {
+        setState(() => _loadingMap = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lokasi tidak ditemukan')),
+        );
+      }
+    } catch (e) {
+      setState(() => _loadingMap = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mencari lokasi: $e')),
+      );
+    }
+  }
+
+  void _shareSelectedLocation() async {
+    if (_selectedLocation != null) {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) return;
+
+      final message = {
+        'senderId': currentUser.uid,
+        'receiverId': widget.receiverId,
+        'message': 'Lokasi: ${_selectedLocation!.latitude}, ${_selectedLocation!.longitude}',
+        'timestamp': FieldValue.serverTimestamp(),
+        'read': false,
+        'isLocation': true,
+        'latitude': _selectedLocation!.latitude,
+        'longitude': _selectedLocation!.longitude,
+        'productInfo': widget.productInfo,
+      };
+
+      await _firestore
+          .collection('chats')
+          .doc(_chatId)
+          .collection('messages')
+          .add(message);
+
+      await _firestore.collection('chats').doc(_chatId).update({
+        'lastMessage': '[Lokasi]',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      });
+
+      setState(() {
+        _showMap = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = _auth.currentUser;
@@ -209,6 +313,82 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 ],
               ),
             ),
+          if (_showMap)
+            Container(
+              height: 320,
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Cari lokasi...',
+                            border: OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                              icon: Icon(Icons.search),
+                              onPressed: () {
+                                if (_searchController.text.isNotEmpty) {
+                                  _searchLocation(_searchController.text);
+                                }
+                              },
+                            ),
+                          ),
+                          onSubmitted: (value) {
+                            if (value.isNotEmpty) _searchLocation(value);
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.my_location),
+                        onPressed: _getCurrentLocation,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: _loadingMap
+                        ? Center(child: CircularProgressIndicator())
+                        : FlutterMap(
+                            mapController: _mapController,
+                            options: MapOptions(
+                              center: _selectedLocation ?? LatLng(-6.2, 106.8),
+                              zoom: 15.0,
+                              onTap: (tapPosition, point) {
+                                setState(() => _selectedLocation = point);
+                              },
+                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                subdomains: ['a', 'b', 'c'],
+                                userAgentPackageName: 'com.example.app',
+                              ),
+                              if (_selectedLocation != null)
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      width: 40.0,
+                                      height: 40.0,
+                                      point: _selectedLocation!,
+                                      child: Icon(Icons.location_on, color: Colors.red, size: 40),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    icon: Icon(Icons.send),
+                    label: Text('Kirim Lokasi'),
+                    onPressed: _shareSelectedLocation,
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
@@ -237,6 +417,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     final isMe = message['senderId'] == currentUser?.uid;
                     final timestamp = message['timestamp'] as Timestamp?;
                     final isRead = message['read'] ?? false;
+
+                    // Check if this is a location message
+                    final isLocation = message['isLocation'] == true;
 
                     // Check if this is the first message of the day
                     final bool showDate = index == messages.length - 1 ||
@@ -283,46 +466,106 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                               color: isMe ? Colors.blue : Colors.grey[300],
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Column(
-                              crossAxisAlignment: isMe
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  message['message'],
-                                  style: TextStyle(
-                                    color: isMe ? Colors.white : Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      timestamp != null
-                                          ? '${timestamp.toDate().hour.toString().padLeft(2, '0')}:${timestamp.toDate().minute.toString().padLeft(2, '0')}'
-                                          : '',
-                                      style: TextStyle(
-                                        color: isMe
-                                            ? Colors.white70
-                                            : Colors.black54,
-                                        fontSize: 10,
+                            child: isLocation
+                                ? Column(
+                                    crossAxisAlignment: isMe
+                                        ? CrossAxisAlignment.end
+                                        : CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Lokasi dibagikan',
+                                        style: TextStyle(
+                                          color: isMe
+                                              ? Colors.white
+                                              : Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    if (isMe) ...[
-                                      const SizedBox(width: 4),
-                                      Icon(
-                                        isRead ? Icons.done_all : Icons.done,
-                                        size: 14,
-                                        color: isRead
-                                            ? Colors.blue[100]
-                                            : Colors.white70,
+                                      const SizedBox(height: 8),
+                                      SizedBox(
+                                        width: 200,
+                                        height: 120,
+                                        child: FlutterMap(
+                                          options: MapOptions(
+                                            center: LatLng(
+                                              message['latitude'] ?? 0.0,
+                                              message['longitude'] ?? 0.0,
+                                            ),
+                                            zoom: 15.0,
+                                            interactiveFlags: InteractiveFlag.none,
+                                          ),
+                                          children: [
+                                            TileLayer(
+                                              urlTemplate:
+                                                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                              subdomains: ['a', 'b', 'c'],
+                                              userAgentPackageName:
+                                                  'com.example.app',
+                                            ),
+                                            MarkerLayer(
+                                              markers: [
+                                                Marker(
+                                                  width: 40.0,
+                                                  height: 40.0,
+                                                  point: LatLng(
+                                                    message['latitude'] ?? 0.0,
+                                                    message['longitude'] ?? 0.0,
+                                                  ),
+                                                  child: Icon(Icons.location_on,
+                                                      color: Colors.red,
+                                                      size: 40),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment: isMe
+                                        ? CrossAxisAlignment.end
+                                        : CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        message['message'],
+                                        style: TextStyle(
+                                          color: isMe
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            timestamp != null
+                                                ? '${timestamp.toDate().hour.toString().padLeft(2, '0')}:${timestamp.toDate().minute.toString().padLeft(2, '0')}'
+                                                : '',
+                                            style: TextStyle(
+                                              color: isMe
+                                                  ? Colors.white70
+                                                  : Colors.black54,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          if (isMe) ...[
+                                            const SizedBox(width: 4),
+                                            Icon(
+                                              isRead
+                                                  ? Icons.done_all
+                                                  : Icons.done,
+                                              size: 14,
+                                              color: isRead
+                                                  ? Colors.blue[100]
+                                                  : Colors.white70,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                           ),
                         ),
                       ],
@@ -347,6 +590,17 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             ),
             child: Row(
               children: [
+                IconButton(
+                  icon: Icon(Icons.location_on),
+                  onPressed: () {
+                    setState(() {
+                      _showMap = !_showMap;
+                      if (_showMap && _selectedLocation == null) {
+                        _getCurrentLocation();
+                      }
+                    });
+                  },
+                ),
                 Expanded(
                   child: TextField(
                     controller: _messageController,
@@ -408,6 +662,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   @override
   void dispose() {
     _messageController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 }
