@@ -42,6 +42,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   bool _disposed = false;
   List<Map<String, dynamic>> _suggestions = [];
   bool _isLoadingSuggestions = false;
+  LatLng? _userLocation;
 
   @override
   void initState() {
@@ -161,16 +162,22 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         }
       }
       final locData = await _locationService!.getLocation();
+      if (_disposed) return;
       setState(() {
         _selectedLocation = LatLng(locData.latitude ?? 0.0, locData.longitude ?? 0.0);
+        _userLocation = LatLng(locData.latitude ?? 0.0, locData.longitude ?? 0.0);
         _loadingMap = false;
       });
-      _mapController.move(_selectedLocation!, 15.0);
+      if (_selectedLocation != null && !_disposed) {
+        _mapController.move(_selectedLocation!, 15.0);
+      }
     } catch (e) {
-      setState(() => _loadingMap = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mendapatkan lokasi: $e')),
-      );
+      if (!_disposed) {
+        setState(() => _loadingMap = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mendapatkan lokasi: $e')),
+        );
+      }
     }
   }
 
@@ -206,7 +213,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   Future<void> _fetchSuggestions(String query) async {
-    if (query.isEmpty) {
+    if (query.isEmpty || _userLocation == null) {
       setState(() {
         _suggestions = [];
       });
@@ -215,8 +222,18 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     setState(() {
       _isLoadingSuggestions = true;
     });
+
+    // Buat viewbox sekitar user (misal 0.2 derajat ke segala arah)
+    final lat = _userLocation!.latitude;
+    final lon = _userLocation!.longitude;
+    final delta = 0.2; // ~20km, bisa diubah sesuai kebutuhan
+    final viewbox = '${lon - delta},${lat - delta},${lon + delta},${lat + delta}';
+
     final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=5');
+      'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=5'
+      '&countrycodes=id&viewbox=$viewbox&bounded=1'
+    );
+
     try {
       final response = await http.get(url, headers: {
         'User-Agent': 'FlutterApp'
@@ -442,11 +459,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                         itemCount: _suggestions.length,
                         itemBuilder: (context, index) {
                           final suggestion = _suggestions[index];
+                          final lat = double.tryParse(suggestion['lat']?.toString() ?? '') ?? 0.0;
+                          final lon = double.tryParse(suggestion['lon']?.toString() ?? '') ?? 0.0;
                           return ListTile(
                             title: Text(suggestion['display_name']),
                             onTap: () {
-                              final lat = double.parse(suggestion['lat']);
-                              final lon = double.parse(suggestion['lon']);
                               setState(() {
                                 _selectedLocation = LatLng(lat, lon);
                                 _searchController.text = suggestion['display_name'];
@@ -595,8 +612,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                       const SizedBox(height: 8),
                                       GestureDetector(
                                         onTap: () async {
-                                          final lat = message['latitude'];
-                                          final lng = message['longitude'];
+                                          final lat = double.tryParse(message['latitude']?.toString() ?? '') ?? 0.0;
+                                          final lng = double.tryParse(message['longitude']?.toString() ?? '') ?? 0.0;
                                           final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
                                           if (await canLaunchUrl(Uri.parse(url))) {
                                             await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
@@ -612,8 +629,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                           child: FlutterMap(
                                             options: MapOptions(
                                               center: LatLng(
-                                                message['latitude'] ?? 0.0,
-                                                message['longitude'] ?? 0.0,
+                                                double.tryParse(message['latitude']?.toString() ?? '') ?? 0.0,
+                                                double.tryParse(message['longitude']?.toString() ?? '') ?? 0.0,
                                               ),
                                               zoom: 15.0,
                                               interactiveFlags: InteractiveFlag.none,
@@ -623,8 +640,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                 urlTemplate:
                                                     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                                                 subdomains: ['a', 'b', 'c'],
-                                                userAgentPackageName:
-                                                    'com.example.app',
+                                                userAgentPackageName: 'com.example.app',
                                               ),
                                               MarkerLayer(
                                                 markers: [
@@ -632,12 +648,10 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                     width: 40.0,
                                                     height: 40.0,
                                                     point: LatLng(
-                                                      message['latitude'] ?? 0.0,
-                                                      message['longitude'] ?? 0.0,
+                                                      double.tryParse(message['latitude']?.toString() ?? '') ?? 0.0,
+                                                      double.tryParse(message['longitude']?.toString() ?? '') ?? 0.0,
                                                     ),
-                                                    child: Icon(Icons.location_on,
-                                                        color: Colors.red,
-                                                        size: 40),
+                                                    child: Icon(Icons.location_on, color: Colors.red, size: 40),
                                                   ),
                                                 ],
                                               ),
