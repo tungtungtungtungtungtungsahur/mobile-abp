@@ -176,6 +176,18 @@ class _CartPageState extends State<CartPage> {
                                             .doc(user.uid)
                                             .collection('cart_done')
                                             .add(item);
+                                        // Increment seller's totalProductSold
+                                        final sellerId = item['sellerId'];
+                                        if (sellerId != null) {
+                                          final sellerRef = FirebaseFirestore
+                                              .instance
+                                              .collection('users')
+                                              .doc(sellerId);
+                                          await sellerRef.update({
+                                            'totalProductSold':
+                                                FieldValue.increment(1),
+                                          });
+                                        }
                                       }
                                     }
                                     Navigator.push(
