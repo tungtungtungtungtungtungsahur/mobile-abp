@@ -185,23 +185,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
               _buildMenuItem(
-                'Upload KTP',
-                Icons.badge,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => KtpPage(
-                        userId: FirebaseAuth.instance.currentUser!.uid,
-                        onVerificationComplete: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-              _buildMenuItem(
                 'Bantuan',
                 Icons.help,
                 onTap: () {
