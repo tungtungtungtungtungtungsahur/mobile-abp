@@ -40,6 +40,9 @@ class _SellPageState extends State<SellPage> {
     'Tas',
     'Kosmetik',
     'Perlengkapan Rumah',
+    'Kacamata',
+    'Buku',
+    'Lainnya',
   ];
 
   final List<String> conditions = [
@@ -56,7 +59,7 @@ class _SellPageState extends State<SellPage> {
     'Vintage',
     'Modern',
     'Minimalis',
-    'Other',
+    'Lainnya',
   ];
 
   @override
