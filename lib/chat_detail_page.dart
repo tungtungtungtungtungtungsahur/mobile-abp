@@ -5,6 +5,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geocoding/geocoding.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ChatDetailPage extends StatefulWidget {
   final String receiverId;
@@ -36,10 +39,14 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   bool _showMap = false;
   bool _loadingMap = false;
   loc.Location? _locationService;
+  bool _disposed = false;
+  List<Map<String, dynamic>> _suggestions = [];
+  bool _isLoadingSuggestions = false;
 
   @override
   void initState() {
     super.initState();
+    _disposed = false;
     _getOrCreateChat();
     _markMessagesAsRead();
     _locationService = loc.Location();
@@ -171,24 +178,66 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     setState(() => _loadingMap = true);
     try {
       List<Location> locations = await locationFromAddress(query);
-      if (locations.isNotEmpty) {
-        final loc = locations.first;
-        setState(() {
-          _selectedLocation = LatLng(loc.latitude, loc.longitude);
-          _loadingMap = false;
-        });
-        _mapController.move(_selectedLocation!, 15.0);
-      } else {
-        setState(() => _loadingMap = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lokasi tidak ditemukan')),
-        );
+      if (!_disposed) {
+        if (locations.isNotEmpty) {
+          final loc = locations.first;
+          setState(() {
+            _selectedLocation = LatLng(loc.latitude, loc.longitude);
+            _loadingMap = false;
+          });
+          if (!_disposed) {
+            _mapController.move(_selectedLocation!, 15.0);
+          }
+        } else {
+          setState(() => _loadingMap = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lokasi tidak ditemukan')),
+          );
+        }
       }
     } catch (e) {
-      setState(() => _loadingMap = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mencari lokasi: $e')),
-      );
+      if (!_disposed) {
+        setState(() => _loadingMap = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mencari lokasi: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchSuggestions(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _suggestions = [];
+      });
+      return;
+    }
+    setState(() {
+      _isLoadingSuggestions = true;
+    });
+    final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=5');
+    try {
+      final response = await http.get(url, headers: {
+        'User-Agent': 'FlutterApp'
+      });
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+        setState(() {
+          _suggestions = data.cast<Map<String, dynamic>>();
+          _isLoadingSuggestions = false;
+        });
+      } else {
+        setState(() {
+          _suggestions = [];
+          _isLoadingSuggestions = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _suggestions = [];
+        _isLoadingSuggestions = false;
+      });
     }
   }
 
@@ -196,6 +245,26 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     if (_selectedLocation != null) {
       final currentUser = _auth.currentUser;
       if (currentUser == null) return;
+
+      // Reverse geocoding untuk dapatkan alamat
+      String address = '';
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          _selectedLocation!.latitude,
+          _selectedLocation!.longitude,
+        );
+        if (placemarks.isNotEmpty) {
+          final p = placemarks.first;
+          address = [
+            p.name,
+            p.street,
+            p.subLocality,
+            p.locality,
+            p.administrativeArea,
+            p.country
+          ].where((e) => e != null && e.isNotEmpty).join(', ');
+        }
+      } catch (_) {}
 
       final message = {
         'senderId': currentUser.uid,
@@ -206,6 +275,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         'isLocation': true,
         'latitude': _selectedLocation!.latitude,
         'longitude': _selectedLocation!.longitude,
+        'address': address,
         'productInfo': widget.productInfo,
       };
 
@@ -223,6 +293,15 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       setState(() {
         _showMap = false;
       });
+    }
+  }
+
+  Future<void> openInMaps(double lat, double lng) async {
+    final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
     }
   }
 
@@ -336,6 +415,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                               },
                             ),
                           ),
+                          onChanged: (value) {
+                            _fetchSuggestions(value);
+                          },
                           onSubmitted: (value) {
                             if (value.isNotEmpty) _searchLocation(value);
                           },
@@ -347,6 +429,35 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                       ),
                     ],
                   ),
+                  if (_isLoadingSuggestions)
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: LinearProgressIndicator(),
+                    ),
+                  if (_suggestions.isNotEmpty)
+                    Container(
+                      constraints: BoxConstraints(maxHeight: 180),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _suggestions.length,
+                        itemBuilder: (context, index) {
+                          final suggestion = _suggestions[index];
+                          return ListTile(
+                            title: Text(suggestion['display_name']),
+                            onTap: () {
+                              final lat = double.parse(suggestion['lat']);
+                              final lon = double.parse(suggestion['lon']);
+                              setState(() {
+                                _selectedLocation = LatLng(lat, lon);
+                                _searchController.text = suggestion['display_name'];
+                                _suggestions = [];
+                              });
+                              _mapController.move(_selectedLocation!, 15.0);
+                            },
+                          );
+                        },
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   Expanded(
                     child: _loadingMap
@@ -482,44 +593,69 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                         ),
                                       ),
                                       const SizedBox(height: 8),
-                                      SizedBox(
-                                        width: 200,
-                                        height: 120,
-                                        child: FlutterMap(
-                                          options: MapOptions(
-                                            center: LatLng(
-                                              message['latitude'] ?? 0.0,
-                                              message['longitude'] ?? 0.0,
+                                      GestureDetector(
+                                        onTap: () async {
+                                          final lat = message['latitude'];
+                                          final lng = message['longitude'];
+                                          final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+                                          if (await canLaunchUrl(Uri.parse(url))) {
+                                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Tidak bisa membuka Google Maps')),
+                                            );
+                                          }
+                                        },
+                                        child: SizedBox(
+                                          width: 200,
+                                          height: 120,
+                                          child: FlutterMap(
+                                            options: MapOptions(
+                                              center: LatLng(
+                                                message['latitude'] ?? 0.0,
+                                                message['longitude'] ?? 0.0,
+                                              ),
+                                              zoom: 15.0,
+                                              interactiveFlags: InteractiveFlag.none,
                                             ),
-                                            zoom: 15.0,
-                                            interactiveFlags: InteractiveFlag.none,
-                                          ),
-                                          children: [
-                                            TileLayer(
-                                              urlTemplate:
-                                                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                              subdomains: ['a', 'b', 'c'],
-                                              userAgentPackageName:
-                                                  'com.example.app',
-                                            ),
-                                            MarkerLayer(
-                                              markers: [
-                                                Marker(
-                                                  width: 40.0,
-                                                  height: 40.0,
-                                                  point: LatLng(
-                                                    message['latitude'] ?? 0.0,
-                                                    message['longitude'] ?? 0.0,
+                                            children: [
+                                              TileLayer(
+                                                urlTemplate:
+                                                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                                subdomains: ['a', 'b', 'c'],
+                                                userAgentPackageName:
+                                                    'com.example.app',
+                                              ),
+                                              MarkerLayer(
+                                                markers: [
+                                                  Marker(
+                                                    width: 40.0,
+                                                    height: 40.0,
+                                                    point: LatLng(
+                                                      message['latitude'] ?? 0.0,
+                                                      message['longitude'] ?? 0.0,
+                                                    ),
+                                                    child: Icon(Icons.location_on,
+                                                        color: Colors.red,
+                                                        size: 40),
                                                   ),
-                                                  child: Icon(Icons.location_on,
-                                                      color: Colors.red,
-                                                      size: 40),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
+                                      if ((message['address'] ?? '').toString().isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 4.0),
+                                          child: Text(
+                                            message['address'],
+                                            style: TextStyle(
+                                              color: isMe ? Colors.white70 : Colors.black87,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
                                     ],
                                   )
                                 : Column(
@@ -661,6 +797,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   @override
   void dispose() {
+    _disposed = true;
     _messageController.dispose();
     _searchController.dispose();
     super.dispose();
