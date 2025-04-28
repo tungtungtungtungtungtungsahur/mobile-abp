@@ -215,8 +215,6 @@ class _CartPageState extends State<CartPage> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> item, bool isEditing) {
-    final quantity = item['quantity'] ?? 1;
-
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -263,10 +261,6 @@ class _CartPageState extends State<CartPage> {
                   const SizedBox(height: 8),
                   Text('Rp ${item['price']}',
                       style: const TextStyle(fontSize: 15)),
-                  const SizedBox(height: 8),
-                  Text('Jumlah: $quantity',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w500, color: Colors.blue)),
                   if (isEditing)
                     Row(
                       children: [
@@ -274,22 +268,6 @@ class _CartPageState extends State<CartPage> {
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () {
                             CartService.removeFromCart(item['id']);
-                          },
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.remove),
-                          onPressed: () {
-                            CartService.updateQuantity(
-                                item['id'], quantity - 1);
-                          },
-                        ),
-                        Text('$quantity'),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                            CartService.updateQuantity(
-                                item['id'], quantity + 1);
                           },
                         ),
                       ],

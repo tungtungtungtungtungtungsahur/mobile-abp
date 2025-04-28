@@ -50,27 +50,24 @@ class CartService {
         .get();
 
     if (existingItem.docs.isNotEmpty) {
-      // Update quantity if item exists from the same seller
-      await cartRef.doc(existingItem.docs.first.id).update({
-        'quantity': FieldValue.increment(1),
-      });
-    } else {
-      // Add new item
-      await cartRef.add({
-        'productId': product['id'],
-        'name': product['name'],
-        'price': product['price'],
-        'images': product['images'],
-        'sellerId': product['sellerId'],
-        'sellerUsername': sellerUsername,
-        'seller': {
-          'name': sellerName,
-          'avatarUrl': sellerAvatar,
-        },
-        'quantity': 1,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      // If item exists, do nothing (prevent duplicate)
+      return;
     }
+
+    // Add new item
+    await cartRef.add({
+      'productId': product['id'],
+      'name': product['name'],
+      'price': product['price'],
+      'images': product['images'],
+      'sellerId': product['sellerId'],
+      'sellerUsername': sellerUsername,
+      'seller': {
+        'name': sellerName,
+        'avatarUrl': sellerAvatar,
+      },
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 
   // Remove item from cart
@@ -84,26 +81,6 @@ class CartService {
         .collection('items')
         .doc(itemId)
         .delete();
-  }
-
-  // Update item quantity
-  static Future<void> updateQuantity(String itemId, int quantity) async {
-    final currentUser = _auth.currentUser;
-    if (currentUser == null) return;
-
-    if (quantity <= 0) {
-      await removeFromCart(itemId);
-      return;
-    }
-
-    await _firestore
-        .collection('carts')
-        .doc(currentUser.uid)
-        .collection('items')
-        .doc(itemId)
-        .update({
-      'quantity': quantity,
-    });
   }
 
   // Clear cart
