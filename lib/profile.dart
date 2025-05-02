@@ -132,18 +132,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         Padding(
                           padding: const EdgeInsets.all(24.0),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Rating Stat
-                              _buildRatingStatItem(
-                                data['averageRating']?.toStringAsFixed(1) ??
-                                    '-',
-                                data['totalRatings']?.toString() ?? '0',
-                              ),
-                              Container(
-                                  width: 1,
-                                  height: 40,
-                                  color: Colors.grey[300]),
                               // Total Product Sold Stat
                               _buildStatItem('Total Produk Terjual',
                                   (data['totalProductSold'] ?? 0).toString()),
@@ -329,33 +319,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         );
       },
-    );
-  }
-
-  // Add this new widget for rating stat
-  Widget _buildRatingStatItem(String rating, String totalRatings) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              rating,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.star, color: Colors.amber, size: 20),
-            if (totalRatings != '0') ...[
-              const SizedBox(width: 4),
-              Text('($totalRatings)',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-            ],
-          ],
-        ),
-        const SizedBox(height: 4),
-        const Text('Rating',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
-      ],
     );
   }
 }

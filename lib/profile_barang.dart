@@ -80,11 +80,13 @@ class _ProfileBarangState extends State<ProfileBarang>
                   children: [
                     Row(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 40,
-                          backgroundImage: NetworkImage(
-                            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
-                          ),
+                          backgroundImage: data['profileImageUrl'] != null
+                              ? NetworkImage(data['profileImageUrl'])
+                              : const NetworkImage(
+                                  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=800&auto=format&fit=crop&q=60',
+                                ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -146,9 +148,25 @@ class _ProfileBarangState extends State<ProfileBarang>
                                     color: Colors.grey,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    'Bandung',
-                                    style: TextStyle(color: Colors.grey[600]),
+                                  FutureBuilder<DocumentSnapshot>(
+                                    future: FirebaseFirestore.instance
+                                        .collection('toko')
+                                        .doc(widget.sellerId)
+                                        .get(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        );
+                                      }
+                                      final tokoData = snapshot.data?.data() as Map<String, dynamic>?;
+                                      return Text(
+                                        tokoData?['lokasi'] ?? '-',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
@@ -176,36 +194,6 @@ class _ProfileBarangState extends State<ProfileBarang>
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            const Text(
-                              '5.0 ',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Row(
-                              children: List.generate(
-                                5,
-                                (index) => const Icon(
-                                  Icons.star,
-                                  size: 16,
-                                  color: Colors.amber,
-                                ),
-                              ),
-                            ),
-                            const Text(
-                              ' (100)',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
                   ],
                 );
               },

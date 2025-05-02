@@ -25,8 +25,8 @@ class _SellPageState extends State<SellPage> {
   String? _selectedCategory;
   String? _selectedCondition;
   String? _selectedStyle;
-  int _charCount = 0;
-  final int _maxChars = 500;
+  int _wordCount = 0;
+  final int _maxWords = 500;
 
   bool _isUploading = false;
 
@@ -593,7 +593,15 @@ class _SellPageState extends State<SellPage> {
                     ),
                     onChanged: (text) {
                       setState(() {
-                        _charCount = text.length;
+                        _wordCount = text.trim().isEmpty ? 0 : text.trim().split(RegExp(r'\s+')).length;
+                        if (_wordCount > _maxWords) {
+                          final words = text.trim().split(RegExp(r'\s+'));
+                          _descriptionController.text = words.take(_maxWords).join(' ');
+                          _descriptionController.selection = TextSelection.fromPosition(
+                            TextPosition(offset: _descriptionController.text.length),
+                          );
+                          _wordCount = _maxWords;
+                        }
                       });
                     },
                   ),
@@ -601,11 +609,25 @@ class _SellPageState extends State<SellPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '$_charCount/$_maxChars',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        '$_wordCount/$_maxWords kata',
+                        style: TextStyle(
+                          color: _wordCount > _maxWords ? Colors.red : Colors.grey[600],
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
+                  if (_wordCount > _maxWords)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        'Kata yang dimasukkan sudah lebih dari 500',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

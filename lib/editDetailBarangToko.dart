@@ -39,6 +39,9 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
     'Tas',
     'Kosmetik',
     'Perlengkapan Rumah',
+    'Kacamata',
+    'Buku',
+    'Lainnya',
   ];
 
   final List<String> conditions = [
@@ -55,7 +58,7 @@ class _EditDetailBarangTokoState extends State<EditDetailBarangToko> {
     'Vintage',
     'Modern',
     'Minimalis',
-    'Other',
+    'Lainnya',
   ];
 
   @override

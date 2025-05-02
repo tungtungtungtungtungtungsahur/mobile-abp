@@ -12,6 +12,10 @@ class DetailBarangSaya extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final images = product['images'] as List<dynamic>?;
+    final imageCount = images?.length ?? 0;
+    int currentImageIndex = 0;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -67,10 +71,6 @@ class DetailBarangSaya extends StatelessWidget {
               },
             ),
           ],
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -80,17 +80,78 @@ class DetailBarangSaya extends StatelessWidget {
             // Product Image
             AspectRatio(
               aspectRatio: 1,
-              child: Image.network(
-                (product['images'] as List<dynamic>?)?.isNotEmpty == true
-                    ? (product['images'] as List<dynamic>)[0]
-                    : '',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                      child: Icon(Icons.error_outline, size: 40));
-                },
+              child: Stack(
+                children: [
+                  // Main Image with Swipe
+                  PageView.builder(
+                    itemCount: imageCount,
+                    onPageChanged: (index) {
+                      currentImageIndex = index;
+                    },
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        images![index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                              child: Icon(Icons.error_outline, size: 40));
+                        },
+                      );
+                    },
+                  ),
+                  // Image Gallery Indicator
+                  if (imageCount > 1)
+                    Positioned(
+                      bottom: 16,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          imageCount,
+                          (index) => Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: index == currentImageIndex
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
+            // Image Thumbnails
+            if (imageCount > 1)
+              SizedBox(
+                height: 80,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: imageCount,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          images![index],
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.broken_image, size: 40),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(

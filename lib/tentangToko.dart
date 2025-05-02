@@ -25,6 +25,9 @@ class _TentangTokoState extends State<TentangToko> {
     'Tas',
     'Kosmetik',
     'Perlengkapan Rumah',
+    'Kacamata',
+    'Buku',
+    'Lainnya',
   ];
 
   final List<String> _selectedCategories = [];
