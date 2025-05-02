@@ -3,7 +3,7 @@ import 'editDetailBarangToko.dart';
 import 'hapusbarangdariToko.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class DetailBarangSaya extends StatelessWidget {
+class DetailBarangSaya extends StatefulWidget {
   final Map<String, dynamic> product;
   final String? productId;
 
@@ -11,10 +11,16 @@ class DetailBarangSaya extends StatelessWidget {
       : super(key: key);
 
   @override
+  State<DetailBarangSaya> createState() => _DetailBarangSayaState();
+}
+
+class _DetailBarangSayaState extends State<DetailBarangSaya> {
+  int currentImageIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    final images = product['images'] as List<dynamic>?;
+    final images = widget.product['images'] as List<dynamic>?;
     final imageCount = images?.length ?? 0;
-    int currentImageIndex = 0;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -26,7 +32,7 @@ class DetailBarangSaya extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          if (productId != null) ...[
+          if (widget.productId != null) ...[
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.black),
               onPressed: () {
@@ -34,8 +40,8 @@ class DetailBarangSaya extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => EditDetailBarangToko(
-                      productId: productId!,
-                      product: product,
+                      productId: widget.productId!,
+                      product: widget.product,
                     ),
                   ),
                 );
@@ -64,8 +70,8 @@ class DetailBarangSaya extends StatelessWidget {
                   ),
                 );
 
-                if (confirmed == true && productId != null) {
-                  await HapusBarangService.hapusBarang(context, productId!);
+                if (confirmed == true && widget.productId != null) {
+                  await HapusBarangService.hapusBarang(context, widget.productId!);
                   Navigator.pop(context);
                 }
               },
@@ -86,7 +92,9 @@ class DetailBarangSaya extends StatelessWidget {
                   PageView.builder(
                     itemCount: imageCount,
                     onPageChanged: (index) {
-                      currentImageIndex = index;
+                      setState(() {
+                        currentImageIndex = index;
+                      });
                     },
                     itemBuilder: (context, index) {
                       return Image.network(
@@ -159,14 +167,14 @@ class DetailBarangSaya extends StatelessWidget {
                 children: [
                   // Product Name
                   Text(
-                    product['name'] ?? '',
+                    widget.product['name'] ?? '',
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   // Price
                   Text(
-                    'Rp ${product['price'] ?? 0}',
+                    'Rp ${widget.product['price'] ?? 0}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -181,7 +189,7 @@ class DetailBarangSaya extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    product['description'] ?? '-',
+                    widget.product['description'] ?? '-',
                     style: const TextStyle(fontSize: 15, color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
@@ -191,15 +199,15 @@ class DetailBarangSaya extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  Text('Kategori: ${product['category'] ?? '-'}',
+                  Text('Kategori: ${widget.product['category'] ?? '-'}',
                       style:
                           const TextStyle(fontSize: 15, color: Colors.black87)),
                   const SizedBox(height: 4),
-                  Text('Kondisi: ${product['condition'] ?? '-'}',
+                  Text('Kondisi: ${widget.product['condition'] ?? '-'}',
                       style:
                           const TextStyle(fontSize: 15, color: Colors.black87)),
                   const SizedBox(height: 4),
-                  Text('Style: ${product['style'] ?? '-'}',
+                  Text('Style: ${widget.product['style'] ?? '-'}',
                       style:
                           const TextStyle(fontSize: 15, color: Colors.black87)),
                 ],

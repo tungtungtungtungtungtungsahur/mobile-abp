@@ -320,6 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, userSnapshot) {
                 if (!userSnapshot.hasData) {
                   return _buildProductCard(
+                    images: images ?? [],
                     imageUrl: imageUrl,
                     name: name,
                     price: 'Rp. $price',
@@ -340,6 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     userData?['username']?.toString() ?? 'Unknown User';
 
                 return _buildProductCard(
+                  images: images ?? [],
                   imageUrl: imageUrl,
                   name: name,
                   price: 'Rp. $price',
@@ -361,6 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProductCard({
+    required List<dynamic> images,
     required String imageUrl,
     required String name,
     required String price,
@@ -382,9 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(
             builder: (context) => DetailBarangShop(
               product: {
-                'images': [
-                  imageUrl
-                ], // Pass as array to match Cloudinary format
+                'images': images,
                 'name': name,
                 'price': price.replaceAll('Rp. ', ''),
                 'condition': condition,

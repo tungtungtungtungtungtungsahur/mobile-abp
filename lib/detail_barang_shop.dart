@@ -7,24 +7,31 @@ import 'dart:io';
 import 'profile_barang.dart';
 import 'visit_seller_shop.dart';
 
-class DetailBarangShop extends StatelessWidget {
+class DetailBarangShop extends StatefulWidget {
   final Map<String, dynamic> product;
 
   const DetailBarangShop({Key? key, required this.product}) : super(key: key);
 
   @override
+  State<DetailBarangShop> createState() => _DetailBarangShopState();
+}
+
+class _DetailBarangShopState extends State<DetailBarangShop> {
+  int _currentImageIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    final images = product['images'] as List<dynamic>?;
-    final name = product['name']?.toString() ?? 'No Name';
-    final price = product['price']?.toString() ?? '0';
-    final description = product['description']?.toString() ?? '-';
-    final condition = product['condition']?.toString() ?? '-';
-    final category = product['category']?.toString() ?? '-';
-    final color = product['color']?.toString() ?? '-';
-    final style = product['style']?.toString() ?? '-';
-    final sellerId = product['sellerId']?.toString() ?? '';
-    final createdAt = product['createdAt']?.toDate() ?? DateTime.now();
-    final updatedAt = product['updatedAt']?.toDate();
+    final images = widget.product['images'] as List<dynamic>?;
+    final name = widget.product['name']?.toString() ?? 'No Name';
+    final price = widget.product['price']?.toString() ?? '0';
+    final description = widget.product['description']?.toString() ?? '-';
+    final condition = widget.product['condition']?.toString() ?? '-';
+    final category = widget.product['category']?.toString() ?? '-';
+    final color = widget.product['color']?.toString() ?? '-';
+    final style = widget.product['style']?.toString() ?? '-';
+    final sellerId = widget.product['sellerId']?.toString() ?? '';
+    final createdAt = widget.product['createdAt']?.toDate() ?? DateTime.now();
+    final updatedAt = widget.product['updatedAt']?.toDate();
 
     return Scaffold(
       appBar: AppBar(
@@ -61,31 +68,68 @@ class DetailBarangShop extends StatelessWidget {
                             ? Stack(
                                 children: [
                                   // Main Image
-                                  images![0].toString().startsWith('http')
-                                      ? Image.network(
-                                          images![0].toString(),
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const Center(
-                                                      child: Icon(
-                                                          Icons.broken_image,
-                                                          size: 80)),
-                                        )
-                                      : Image.file(
-                                          File(images![0]
-                                              .toString()
-                                              .replaceAll('file://', '')),
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const Center(
-                                                      child: Icon(
-                                                          Icons.broken_image,
-                                                          size: 80)),
+                                  GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => Dialog(
+                                          child: Stack(
+                                            children: [
+                                              images![_currentImageIndex]
+                                                      .toString()
+                                                      .startsWith('http')
+                                                  ? Image.network(
+                                                      images![_currentImageIndex]
+                                                          .toString(),
+                                                      fit: BoxFit.contain,
+                                                    )
+                                                  : Image.file(
+                                                      File(images![_currentImageIndex]
+                                                          .toString()
+                                                          .replaceAll('file://', '')),
+                                                      fit: BoxFit.contain,
+                                                    ),
+                                              Positioned(
+                                                top: 8,
+                                                right: 8,
+                                                child: IconButton(
+                                                  icon: const Icon(Icons.close),
+                                                  onPressed: () => Navigator.pop(context),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
+                                      );
+                                    },
+                                    child: images![_currentImageIndex]
+                                            .toString()
+                                            .startsWith('http')
+                                        ? Image.network(
+                                            images![_currentImageIndex].toString(),
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    const Center(
+                                                        child: Icon(
+                                                            Icons.broken_image,
+                                                            size: 80)),
+                                          )
+                                        : Image.file(
+                                            File(images![_currentImageIndex]
+                                                .toString()
+                                                .replaceAll('file://', '')),
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    const Center(
+                                                        child: Icon(
+                                                            Icons.broken_image,
+                                                            size: 80)),
+                                          ),
+                                  ),
                                   // Image Gallery Indicator
                                   if (images.length > 1)
                                     Positioned(
@@ -104,7 +148,7 @@ class DetailBarangShop extends StatelessWidget {
                                                 horizontal: 4),
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
-                                              color: index == 0
+                                              color: index == _currentImageIndex
                                                   ? Colors.white
                                                   : Colors.white
                                                       .withOpacity(0.5),
@@ -133,35 +177,48 @@ class DetailBarangShop extends StatelessWidget {
                                 padding: const EdgeInsets.only(right: 8),
                                 child: GestureDetector(
                                   onTap: () {
-                                    // TODO: Implement image gallery view
+                                    setState(() {
+                                      _currentImageIndex = index;
+                                    });
                                   },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: images![index]
-                                            .toString()
-                                            .startsWith('http')
-                                        ? Image.network(
-                                            images![index].toString(),
-                                            width: 80,
-                                            height: 80,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error,
-                                                    stackTrace) =>
-                                                const Icon(Icons.broken_image,
-                                                    size: 40),
-                                          )
-                                        : Image.file(
-                                            File(images![index]
-                                                .toString()
-                                                .replaceAll('file://', '')),
-                                            width: 80,
-                                            height: 80,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error,
-                                                    stackTrace) =>
-                                                const Icon(Icons.broken_image,
-                                                    size: 40),
-                                          ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: _currentImageIndex == index
+                                            ? Colors.orange
+                                            : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: images![index]
+                                              .toString()
+                                              .startsWith('http')
+                                          ? Image.network(
+                                              images![index].toString(),
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  const Icon(Icons.broken_image,
+                                                      size: 40),
+                                            )
+                                          : Image.file(
+                                              File(images![index]
+                                                  .toString()
+                                                  .replaceAll('file://', '')),
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  const Icon(Icons.broken_image,
+                                                      size: 40),
+                                            ),
+                                    ),
                                   ),
                                 ),
                               );
@@ -298,10 +355,10 @@ class DetailBarangShop extends StatelessWidget {
                         onPressed: () {
                           // Add to cart logic
                           final productForCart =
-                              Map<String, dynamic>.from(product);
-                          productForCart['id'] = product['productId'];
+                              Map<String, dynamic>.from(widget.product);
+                          productForCart['id'] = productForCart['productId'];
                           productForCart['sellerId'] =
-                              product['sellerId'] ?? 'unknown';
+                              productForCart['sellerId'] ?? 'unknown';
                           productForCart['sellerName'] = sellerName;
                           productForCart['sellerAvatar'] = sellerAvatar;
                           CartService.addToCart(productForCart);
@@ -345,7 +402,7 @@ class DetailBarangShop extends StatelessWidget {
                                 productInfo: {
                                   'name': name,
                                   'price': price,
-                                  'images': images,
+                                  'images': images ?? [],
                                   'description': description,
                                   'condition': condition,
                                   'sellerName': sellerName,
